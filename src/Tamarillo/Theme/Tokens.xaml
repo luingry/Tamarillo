@@ -1,0 +1,69 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <!--
+        Tamarillo tokens: a thin layer over the SwissTechKnife tokens (merged below, so every Brush.*,
+        Color.*, Motion.* and Ease.* key is available here). Only values the host system does not have
+        live here: radial geometry, the motion choreography of the wheel and the overlay, and the
+        floating-surface materials. See docs/DESIGN_SYSTEM.md.
+        Code reads these through Tamarillo.Ui.Tokens (one lookup, cached), XAML through StaticResource.
+    -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/SwissTechKnife.Sdk;component/Theme/Tokens.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- ═══ Materials (floating surfaces over any wallpaper) ═══ -->
+    <!-- The wheel and the overlay float over arbitrary content: they use an opaque Surface2 body,
+         a hairline of light at the top edge (tone, not stroke) and the popup elevation. -->
+    <Color x:Key="Color.Tama.Ring">#F2201F1C</Color>
+    <Color x:Key="Color.Tama.Hub">#FF2A2926</Color>
+    <Color x:Key="Color.Tama.Segment.Hover">#14FFFFFF</Color>
+    <Color x:Key="Color.Tama.Rim">#12FFFFFF</Color>
+    <SolidColorBrush x:Key="Brush.Tama.Ring" Color="{StaticResource Color.Tama.Ring}" po:Freeze="True" />
+    <SolidColorBrush x:Key="Brush.Tama.Hub" Color="{StaticResource Color.Tama.Hub}" po:Freeze="True" />
+    <SolidColorBrush x:Key="Brush.Tama.Rim" Color="{StaticResource Color.Tama.Rim}" po:Freeze="True" />
+    <!-- Brand accent (catalog tile, About). Never used for state: selection stays Brush.Accent. -->
+    <Color x:Key="Color.Tama.Brand">#E65A70</Color>
+    <SolidColorBrush x:Key="Brush.Tama.Brand" Color="{StaticResource Color.Tama.Brand}" po:Freeze="True" />
+
+    <!-- ═══ Radial geometry (DIPs) ═══ -->
+    <!-- hub | gap | ring (first level) | gap | sub-ring (second level). -->
+    <sys:Double x:Key="Radial.Hub">50</sys:Double>
+    <sys:Double x:Key="Radial.Inner">58</sys:Double>
+    <sys:Double x:Key="Radial.Outer">138</sys:Double>
+    <sys:Double x:Key="Radial.SubInner">146</sys:Double>
+    <sys:Double x:Key="Radial.SubOuter">198</sys:Double>
+    <!-- Gap between neighbouring segments, measured as an arc length, and the corner rounding. -->
+    <sys:Double x:Key="Radial.Gap">4</sys:Double>
+    <sys:Double x:Key="Radial.Corner">9</sys:Double>
+    <!-- Angular size of one sub-ring item, and the window margin around the sub-ring. -->
+    <sys:Double x:Key="Radial.SubItemAngle">30</sys:Double>
+    <sys:Double x:Key="Radial.Margin">28</sys:Double>
+    <sys:Double x:Key="Radial.IconSize">22</sys:Double>
+    <sys:Double x:Key="Radial.SubIconSize">18</sys:Double>
+
+    <!-- ═══ Motion choreography ═══ -->
+    <!-- Wheel in: hub pops (Ease.Pop), segments follow with a stagger, labels last. -->
+    <Duration x:Key="Motion.Wheel.In">0:0:0.26</Duration>
+    <sys:Double x:Key="Motion.Wheel.Stagger">16</sys:Double>
+    <Duration x:Key="Motion.Wheel.Out">0:0:0.14</Duration>
+    <!-- Highlight glides between segments instead of jumping. -->
+    <Duration x:Key="Motion.Highlight">0:0:0.16</Duration>
+    <!-- Hovering a group this long opens its sub-ring (moving past the outer edge opens it at once). -->
+    <sys:Double x:Key="Motion.Dwell">260</sys:Double>
+    <Duration x:Key="Motion.SubRing.In">0:0:0.22</Duration>
+    <Duration x:Key="Motion.Overlay.In">0:0:0.32</Duration>
+    <Duration x:Key="Motion.Overlay.Out">0:0:0.18</Duration>
+    <Duration x:Key="Motion.Check">0:0:0.42</Duration>
+    <BackEase x:Key="Ease.Pop" EasingMode="EaseOut" Amplitude="0.32" po:Freeze="True" />
+    <CubicEase x:Key="Ease.In" EasingMode="EaseIn" po:Freeze="True" />
+
+    <!-- ═══ Overlay ═══ -->
+    <sys:Double x:Key="Overlay.Width">360</sys:Double>
+    <sys:Double x:Key="Overlay.Ring">36</sys:Double>
+    <sys:Double x:Key="Overlay.RingStroke">3</sys:Double>
+
+    <!-- Icon pens: every Tamarillo icon is a 24-grid stroke drawn with one of these. -->
+    <sys:Double x:Key="Icon.Stroke">1.8</sys:Double>
+</ResourceDictionary>

@@ -1,0 +1,15 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Entry point of the Tamarillo layer, merged by every window the module owns (wheel, overlay, float).
+        Module pages inside the host need nothing: the host already merges the SwissTechKnife theme.
+        Order matters only for readability: each file merges what it references (see ERRORS.md).
+    -->
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Tamarillo.Module;component/Theme/Tokens.xaml" />
+        <ResourceDictionary Source="/SwissTechKnife.Sdk;component/Theme/Typography.xaml" />
+        <ResourceDictionary Source="/Tamarillo.Module;component/Theme/Icons.xaml" />
+        <ResourceDictionary Source="/Tamarillo.Module;component/Theme/Brand.xaml" />
+        <ResourceDictionary Source="/Tamarillo.Module;component/Theme/Controls.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

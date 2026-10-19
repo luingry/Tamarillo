@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>Tamarillo.Module</AssemblyName>
+    <RootNamespace>Tamarillo</RootNamespace>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Compile-only: the host provides the one shared copy at runtime (scripts/update-sdk.ps1 refreshes it). -->
+    <Reference Include="SwissTechKnife.Sdk" HintPath="..\..\lib\SwissTechKnife.Sdk.dll" Private="false" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- WinRT projections (Media Foundation transcoder, PDF renderer, OCR, share sheet). Reference-only:
+         the runtime pieces ship with Windows and .NET Framework, nothing is copied to the output. -->
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.22621.2428" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="module.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tamarillo.Tests" />
+    <InternalsVisibleTo Include="Tamarillo.DevHost" />
+  </ItemGroup>
+</Project>

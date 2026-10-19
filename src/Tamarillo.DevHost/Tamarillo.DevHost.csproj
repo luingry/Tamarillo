@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Runs the module without the SwissTechKnife host: the host's design system is loaded the same way the
+    host does it, and a minimal IModuleContext stands in for the host. The snapshot switch (see Program.cs) renders the wheel,
+    the overlay and both pages to PNGs for visual review.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>Tamarillo.DevHost</AssemblyName>
+    <RootNamespace>Tamarillo.DevHost</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\assets\brand\tamarillo.ico</ApplicationIcon>
+    <StartupObject>Tamarillo.DevHost.Program</StartupObject>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Here the SDK is copied next to the exe: this process is the host. -->
+    <Reference Include="SwissTechKnife.Sdk" HintPath="..\..\lib\SwissTechKnife.Sdk.dll" Private="true" />
+    <ProjectReference Include="..\Tamarillo\Tamarillo.csproj" />
+  </ItemGroup>
+</Project>

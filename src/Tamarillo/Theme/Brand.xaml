@@ -1,0 +1,151 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
+    <!--
+        Tamarillo brand mark. Single source of truth for the logo: the module renders it as vector and
+        scripts/render-brand.ps1 rasterizes the same drawings into the .ico and PNGs.
+
+        Concept: a tamarillo cut across, seen head-on. The cross-section *is* the product: a hub
+        (the files you drag), a ring of segments (the options) and one wedge pulled outward (the option
+        you drop on). Six seeds point at the hub like the menu's six default directions.
+        Grid: 256 x 256, fruit centre (128,140), skin r92, flesh r80, hub r18, wedge cut at r30, wedge 0..60 deg
+        pulled 24 px along its bisector.
+    -->
+
+    <!-- ═══ Palette ═══ -->
+    <LinearGradientBrush x:Key="Brand.SkinBrush" StartPoint="0.15,0" EndPoint="0.85,1" po:Freeze="True">
+        <GradientStop Color="#F0566A" Offset="0" />
+        <GradientStop Color="#B8223F" Offset="1" />
+    </LinearGradientBrush>
+    <RadialGradientBrush x:Key="Brand.FleshBrush" Center="0.5,0.5" GradientOrigin="0.45,0.4" RadiusX="0.62" RadiusY="0.62" po:Freeze="True">
+        <GradientStop Color="#FFD592" Offset="0" />
+        <GradientStop Color="#F7A355" Offset="0.7" />
+        <GradientStop Color="#EE8540" Offset="1" />
+    </RadialGradientBrush>
+    <LinearGradientBrush x:Key="Brand.WedgeFleshBrush" StartPoint="0,0" EndPoint="1,1" po:Freeze="True">
+        <GradientStop Color="#FFC67A" Offset="0" />
+        <GradientStop Color="#F38E45" Offset="1" />
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="Brand.SeedBrush" Color="#6E1630" po:Freeze="True" />
+    <LinearGradientBrush x:Key="Brand.LeafBrush" StartPoint="0,1" EndPoint="1,0" po:Freeze="True">
+        <GradientStop Color="#5E8C46" Offset="0" />
+        <GradientStop Color="#9CC46F" Offset="1" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Brand.BadgeBrush" StartPoint="0,0" EndPoint="0,1" po:Freeze="True">
+        <GradientStop Color="#2B2825" Offset="0" />
+        <GradientStop Color="#161514" Offset="1" />
+    </LinearGradientBrush>
+    <Pen x:Key="Brand.StemPen" Brush="#7FAA5A" Thickness="7" StartLineCap="Round" EndLineCap="Round" po:Freeze="True" />
+
+    <!-- ═══ Shapes ═══ -->
+    <TranslateTransform x:Key="Brand.WedgeOffset" X="20.8" Y="12" po:Freeze="True" />
+
+    <!-- Fruit without stem: used everywhere, including the small icon sizes. -->
+    <DrawingCollection x:Key="Brand.FruitShapes" po:Freeze="True">
+        <!-- Body: 300 degrees of skin, then flesh. -->
+        <GeometryDrawing Brush="{StaticResource Brand.SkinBrush}"
+                         Geometry="M128,140 L174,219.674 A92,92 0 1 1 220,140 Z" />
+        <GeometryDrawing Brush="{StaticResource Brand.FleshBrush}"
+                         Geometry="M128,140 L168,209.282 A80,80 0 1 1 208,140 Z" />
+        <!-- The pulled wedge: the option being chosen. -->
+        <DrawingGroup Transform="{StaticResource Brand.WedgeOffset}">
+            <GeometryDrawing Brush="{StaticResource Brand.SkinBrush}"
+                             Geometry="M220,140 A92,92 0 0 1 174,219.674 L143,165.98 A30,30 0 0 0 158,140 Z" />
+            <GeometryDrawing Brush="{StaticResource Brand.WedgeFleshBrush}"
+                             Geometry="M208,140 A80,80 0 0 1 168,209.282 L143,165.98 A30,30 0 0 0 158,140 Z" />
+            <GeometryDrawing Brush="{StaticResource Brand.SeedBrush}">
+                <GeometryDrawing.Geometry>
+                    <EllipseGeometry Center="173.03,166" RadiusX="5.5" RadiusY="9.5">
+                        <EllipseGeometry.Transform>
+                            <RotateTransform Angle="-60" CenterX="173.03" CenterY="166" />
+                        </EllipseGeometry.Transform>
+                    </EllipseGeometry>
+                </GeometryDrawing.Geometry>
+            </GeometryDrawing>
+        </DrawingGroup>
+        <!-- Seeds, pointing at the hub. -->
+        <GeometryDrawing Brush="{StaticResource Brand.SeedBrush}">
+            <GeometryDrawing.Geometry>
+                <GeometryGroup>
+                    <EllipseGeometry Center="128,192" RadiusX="5.5" RadiusY="9.5" />
+                    <EllipseGeometry Center="128,88" RadiusX="5.5" RadiusY="9.5" />
+                    <EllipseGeometry Center="82.97,166" RadiusX="5.5" RadiusY="9.5">
+                        <EllipseGeometry.Transform>
+                            <RotateTransform Angle="60" CenterX="82.97" CenterY="166" />
+                        </EllipseGeometry.Transform>
+                    </EllipseGeometry>
+                    <EllipseGeometry Center="82.97,114" RadiusX="5.5" RadiusY="9.5">
+                        <EllipseGeometry.Transform>
+                            <RotateTransform Angle="-60" CenterX="82.97" CenterY="114" />
+                        </EllipseGeometry.Transform>
+                    </EllipseGeometry>
+                    <EllipseGeometry Center="173.03,114" RadiusX="5.5" RadiusY="9.5">
+                        <EllipseGeometry.Transform>
+                            <RotateTransform Angle="60" CenterX="173.03" CenterY="114" />
+                        </EllipseGeometry.Transform>
+                    </EllipseGeometry>
+                </GeometryGroup>
+            </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <!-- Hub: where the dragged files sit. -->
+        <GeometryDrawing Brush="{StaticResource Brand.SeedBrush}">
+            <GeometryDrawing.Geometry>
+                <EllipseGeometry Center="128,140" RadiusX="18" RadiusY="18" />
+            </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+    </DrawingCollection>
+
+    <!-- Stem, calyx and leaf: only at sizes where they read (>= 40 px). -->
+    <DrawingCollection x:Key="Brand.StemShapes" po:Freeze="True">
+        <GeometryDrawing Pen="{StaticResource Brand.StemPen}" Geometry="M128,52 C128,40 131,31 139,22" />
+        <GeometryDrawing Brush="{StaticResource Brand.LeafBrush}" Geometry="M135,36 C143,21 160,14 178,17 C170,32 154,41 135,36 Z" />
+        <GeometryDrawing Brush="#5E8C46" Geometry="M106,56 C114,46 123,46 128,51 C133,46 142,46 150,56 C141,53 134,55 128,58 C122,55 115,53 106,56 Z" />
+    </DrawingCollection>
+
+    <!-- Mark only (transparent background), for dark surfaces. -->
+    <DrawingGroup x:Key="Brand.MarkDrawing" po:Freeze="True">
+        <GeometryDrawing Brush="Transparent" Geometry="M0,0 H256 V256 H0 Z" />
+        <DrawingGroup Children="{StaticResource Brand.FruitShapes}" />
+        <DrawingGroup Children="{StaticResource Brand.StemShapes}" />
+    </DrawingGroup>
+
+    <!-- App icon: mark on the family's dark squircle badge. -->
+    <DrawingGroup x:Key="Brand.LogoDrawing" po:Freeze="True">
+        <GeometryDrawing Brush="{StaticResource Brand.BadgeBrush}">
+            <GeometryDrawing.Geometry>
+                <RectangleGeometry Rect="0,0,256,256" RadiusX="62" RadiusY="62" />
+            </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <DrawingGroup>
+            <DrawingGroup.Transform>
+                <TransformGroup>
+                    <ScaleTransform CenterX="128" CenterY="128" ScaleX="0.84" ScaleY="0.84" />
+                    <TranslateTransform Y="-4" />
+                </TransformGroup>
+            </DrawingGroup.Transform>
+            <DrawingGroup Children="{StaticResource Brand.FruitShapes}" />
+            <DrawingGroup Children="{StaticResource Brand.StemShapes}" />
+        </DrawingGroup>
+    </DrawingGroup>
+
+    <!-- Small icon (16-32 px): no stem, fruit fills the badge. -->
+    <DrawingGroup x:Key="Brand.LogoSmallDrawing" po:Freeze="True">
+        <GeometryDrawing Brush="{StaticResource Brand.BadgeBrush}">
+            <GeometryDrawing.Geometry>
+                <RectangleGeometry Rect="0,0,256,256" RadiusX="62" RadiusY="62" />
+            </GeometryDrawing.Geometry>
+        </GeometryDrawing>
+        <DrawingGroup>
+            <DrawingGroup.Transform>
+                <TransformGroup>
+                    <TranslateTransform X="-5" Y="-14" />
+                    <ScaleTransform CenterX="128" CenterY="128" ScaleX="1.1" ScaleY="1.1" />
+                </TransformGroup>
+            </DrawingGroup.Transform>
+            <DrawingGroup Children="{StaticResource Brand.FruitShapes}" />
+        </DrawingGroup>
+    </DrawingGroup>
+
+    <DrawingImage x:Key="Brand.Mark" Drawing="{StaticResource Brand.MarkDrawing}" po:Freeze="True" />
+    <DrawingImage x:Key="Brand.Logo" Drawing="{StaticResource Brand.LogoDrawing}" po:Freeze="True" />
+</ResourceDictionary>

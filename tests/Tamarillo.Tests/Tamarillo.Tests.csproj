@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Dependency-free console test runner (same style as the host): `dotnet run` exits non-zero on any failure. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <UseWPF>true</UseWPF>
+    <AssemblyName>Tamarillo.Tests</AssemblyName>
+    <RootNamespace>Tamarillo.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="SwissTechKnife.Sdk" HintPath="..\..\lib\SwissTechKnife.Sdk.dll" Private="true" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <ProjectReference Include="..\..\src\Tamarillo\Tamarillo.csproj" />
+  </ItemGroup>
+</Project>

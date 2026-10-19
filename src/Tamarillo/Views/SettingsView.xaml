@@ -1,0 +1,109 @@
+<UserControl x:Class="Tamarillo.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ui="clr-namespace:SwissTechKnife.Sdk;assembly=SwissTechKnife.Sdk"
+             xmlns:views="clr-namespace:Tamarillo.Views">
+    <!-- Host "Configurações" tab (inside the details dialog card: no nested cards). Changes apply immediately. -->
+    <StackPanel>
+        <!-- Shortcut -->
+        <TextBlock Text="Atalho" Style="{StaticResource Text.Overline}" />
+        <Grid Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                <TextBlock Text="Abrir a roda" Style="{StaticResource Text.BodyStrong}" />
+                <TextBlock x:Name="ShortcutHint" Text="Segure enquanto arrasta arquivos. Clique nas teclas para trocar." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+            </StackPanel>
+            <Button x:Name="Recorder" Grid.Column="1" Style="{StaticResource Button.Ghost}" Padding="6,4" Click="OnRecord"
+                    PreviewKeyDown="OnRecorderKeyDown" PreviewKeyUp="OnRecorderKeyUp" LostKeyboardFocus="OnRecorderLostFocus"
+                    AutomationProperties.Name="Alterar atalho" ToolTip="Clique e pressione a nova combinação">
+                <Grid>
+                    <views:Keycaps x:Name="Keys" CapBrushKey="Brush.Surface4" />
+                    <TextBlock x:Name="RecordingText" Text="Pressione as teclas…" Style="{StaticResource Text.BodyStrong}" Foreground="{StaticResource Brush.Accent}"
+                               VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="Collapsed" Margin="8,4" />
+                </Grid>
+            </Button>
+        </Grid>
+        <Button x:Name="ResetShortcut" Style="{StaticResource Button.Ghost}" Content="Restaurar Ctrl + Alt + Shift" HorizontalAlignment="Right"
+                Margin="0,6,0,0" Click="OnResetShortcut" />
+
+        <CheckBox x:Name="SelectionTrigger" Style="{StaticResource Switch}" Margin="0,14,0,0" Checked="OnSelectionTrigger" Unchecked="OnSelectionTrigger">
+            <StackPanel>
+                <TextBlock Text="Também com a seleção do Explorador" Style="{StaticResource Text.BodyStrong}" />
+                <TextBlock Text="Sem arrastar: selecione arquivos, segure o atalho, aponte e solte as teclas." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+            </StackPanel>
+        </CheckBox>
+
+        <!-- Results -->
+        <TextBlock Text="Resultados" Style="{StaticResource Text.Overline}" Margin="0,28,0,0" />
+        <TextBlock Text="Salvar em" Style="{StaticResource Text.BodyStrong}" Margin="0,10,0,0" />
+        <Border Style="{StaticResource Segmented.Container}" HorizontalAlignment="Left" Margin="0,8,0,0">
+            <ui:SegmentedPanel>
+                <RadioButton x:Name="SameFolder" Style="{StaticResource Segmented.Item}" GroupName="TamaOutput" Content="Mesma pasta" Checked="OnOutputChanged" />
+                <RadioButton x:Name="Subfolder" Style="{StaticResource Segmented.Item}" GroupName="TamaOutput" Content="Subpasta Tamarillo" Checked="OnOutputChanged" />
+                <RadioButton x:Name="CustomFolder" Style="{StaticResource Segmented.Item}" GroupName="TamaOutput" Content="Outra pasta" Checked="OnOutputChanged" />
+            </ui:SegmentedPanel>
+        </Border>
+        <Grid x:Name="CustomRow" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock x:Name="CustomPath" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,12,0" />
+            <Button Grid.Column="1" Style="{StaticResource Button.Secondary}" ui:Ui.Icon="&#xE838;" Content="Escolher…" Click="OnPickFolder" />
+        </Grid>
+        <TextBlock Text="Nada é sobrescrito: se o nome já existir, o resultado ganha um número, como no Explorador." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,8,0,0" />
+
+        <Grid Margin="0,18,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="180" />
+                <ColumnDefinition Width="40" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Qualidade do JPG" Style="{StaticResource Text.BodyStrong}" />
+                <TextBlock Text="Ao converter para JPG. Comprimir usa sempre 78." Style="{StaticResource Text.Caption}" Margin="0,2,0,0" />
+            </StackPanel>
+            <Slider x:Name="Quality" Grid.Column="1" Minimum="60" Maximum="100" SmallChange="1" LargeChange="5" IsSnapToTickEnabled="True" TickFrequency="1"
+                    VerticalAlignment="Center" ValueChanged="OnQualityChanged" />
+            <TextBlock x:Name="QualityValue" Grid.Column="2" Style="{StaticResource Text.BodyStrong}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+        </Grid>
+
+        <CheckBox x:Name="AutoDismiss" Style="{StaticResource Switch}" Margin="0,18,0,0" Checked="OnAutoDismiss" Unchecked="OnAutoDismiss">
+            <StackPanel>
+                <TextBlock Text="Fechar o aviso de conclusão sozinho" Style="{StaticResource Text.BodyStrong}" />
+                <TextBlock Text="Desligado, o aviso fica até você clicar no ✓ verde." Style="{StaticResource Text.Caption}" Margin="0,2,0,0" />
+            </StackPanel>
+        </CheckBox>
+
+        <!-- Optional engines -->
+        <TextBlock Text="Motores opcionais" Style="{StaticResource Text.Overline}" Margin="0,28,0,0" />
+        <Grid Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                <TextBlock Text="FFmpeg" Style="{StaticResource Text.BodyStrong}" />
+                <TextBlock x:Name="FfmpegText" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="FfmpegAuto" Style="{StaticResource Button.Ghost}" Content="Automático" Click="OnFfmpegAuto" Margin="0,0,8,0" />
+                <Button Style="{StaticResource Button.Secondary}" Content="Localizar…" Click="OnFfmpegBrowse" />
+            </StackPanel>
+        </Grid>
+        <Grid Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+                <TextBlock Text="Office" Style="{StaticResource Text.BodyStrong}" />
+                <TextBlock x:Name="OfficeText" Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,2,0,0" />
+            </StackPanel>
+            <Button x:Name="Redetect" Grid.Column="1" Style="{StaticResource Button.Ghost}" ui:Ui.Icon="&#xE72C;" Content="Verificar de novo" Click="OnRedetect" VerticalAlignment="Center" />
+        </Grid>
+    </StackPanel>
+</UserControl>

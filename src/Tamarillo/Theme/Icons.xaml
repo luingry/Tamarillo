@@ -1,0 +1,62 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:po="http://schemas.microsoft.com/winfx/2006/xaml/presentation/options">
+    <!--
+        Tamarillo icon set. One drawing language for every action in the wheel and the overlay:
+        24 x 24 grid, 1.8 stroke, round caps and joins, no fills, 2 px safe margin, one idea per icon.
+        Rendered by RadialMenu / IconView with Pen = Tama.Pen.Icon in the current tone.
+        Keys: Icon.<name>. Add new icons here only (see docs/DESIGN_SYSTEM.md, Iconography).
+    -->
+
+    <!-- Kinds (hub) -->
+    <Geometry x:Key="Icon.Image" po:Freeze="True">M5,4 H19 A1,1 0 0 1 20,5 V19 A1,1 0 0 1 19,20 H5 A1,1 0 0 1 4,19 V5 A1,1 0 0 1 5,4 Z M4,16 L9,11 L14,16 M13,15 L15.5,12.5 L20,17 M15.5,8.5 A1,1 0 1 1 15.49,8.5 Z</Geometry>
+    <Geometry x:Key="Icon.Video" po:Freeze="True">M4,6 H15 A1,1 0 0 1 16,7 V17 A1,1 0 0 1 15,18 H4 A1,1 0 0 1 3,17 V7 A1,1 0 0 1 4,6 Z M16,10.5 L21,7.5 V16.5 L16,13.5</Geometry>
+    <Geometry x:Key="Icon.Audio" po:Freeze="True">M9,18 V6 L19,4 V16 M9,18 A2.5,2.5 0 1 1 6.5,15.5 A2.5,2.5 0 0 1 9,18 Z M19,16 A2.5,2.5 0 1 1 16.5,13.5 A2.5,2.5 0 0 1 19,16 Z</Geometry>
+    <Geometry x:Key="Icon.Document" po:Freeze="True">M6,3 H14 L19,8 V20 A1,1 0 0 1 18,21 H6 A1,1 0 0 1 5,20 V4 A1,1 0 0 1 6,3 Z M14,3 V8 H19 M8.5,12.5 H15.5 M8.5,16 H13.5</Geometry>
+    <Geometry x:Key="Icon.Pdf" po:Freeze="True">M6,3 H14 L19,8 V20 A1,1 0 0 1 18,21 H6 A1,1 0 0 1 5,20 V4 A1,1 0 0 1 6,3 Z M14,3 V8 H19 M8,17 C10,12 11,10 11.5,12 C12,14 14,15.5 16,15 C14,14 10,15 8,17 Z</Geometry>
+    <Geometry x:Key="Icon.Table" po:Freeze="True">M5,4 H19 A1,1 0 0 1 20,5 V19 A1,1 0 0 1 19,20 H5 A1,1 0 0 1 4,19 V5 A1,1 0 0 1 5,4 Z M4,9.5 H20 M4,14.5 H20 M10,9.5 V20</Geometry>
+    <Geometry x:Key="Icon.Slides" po:Freeze="True">M3,5 H21 M4,5 V15 A1,1 0 0 0 5,16 H19 A1,1 0 0 0 20,15 V5 M12,16 V20 M9,21 L12,20 L15,21 M8,12.5 L11,9.5 L13,11.5 L16,8.5</Geometry>
+    <Geometry x:Key="Icon.Archive" po:Freeze="True">M4,8 H20 V19 A1,1 0 0 1 19,20 H5 A1,1 0 0 1 4,19 Z M3,4.5 H21 V8 H3 Z M10,12 H14</Geometry>
+    <Geometry x:Key="Icon.Folder" po:Freeze="True">M3,7 V18 A1,1 0 0 0 4,19 H20 A1,1 0 0 0 21,18 V9 A1,1 0 0 0 20,8 H12 L10,5 H4 A1,1 0 0 0 3,6 Z</Geometry>
+    <Geometry x:Key="Icon.Subtitles" po:Freeze="True">M4,5 H20 A1,1 0 0 1 21,6 V18 A1,1 0 0 1 20,19 H4 A1,1 0 0 1 3,18 V6 A1,1 0 0 1 4,5 Z M7,12.5 H11 M13.5,12.5 H17 M7,15.5 H14 M16.5,15.5 H17</Geometry>
+    <Geometry x:Key="Icon.Code" po:Freeze="True">M8.5,7 L3.5,12 L8.5,17 M15.5,7 L20.5,12 L15.5,17 M13.5,5 L10.5,19</Geometry>
+    <Geometry x:Key="Icon.Files" po:Freeze="True">M8,3 H15 L19,7 V17 A1,1 0 0 1 18,18 H8 A1,1 0 0 1 7,17 V4 A1,1 0 0 1 8,3 Z M15,3 V7 H19 M7,7 H5.5 A0.5,0.5 0 0 0 5,7.5 V20.5 A0.5,0.5 0 0 0 5.5,21 H15 A1,1 0 0 0 16,20 V18</Geometry>
+
+    <!-- Actions -->
+    <Geometry x:Key="Icon.Convert" po:Freeze="True">M4,9 H17 M13,5 L17,9 L13,13 M20,15 H7 M11,11 L7,15 L11,19</Geometry>
+    <Geometry x:Key="Icon.Resize" po:Freeze="True">M14,4 H20 V10 M20,4 L13,11 M10,20 H4 V14 M4,20 L11,13</Geometry>
+    <Geometry x:Key="Icon.Compress" po:Freeze="True">M4,10 H10 V4 M10,10 L3.5,3.5 M20,14 H14 V20 M14,14 L20.5,20.5</Geometry>
+    <Geometry x:Key="Icon.Rotate" po:Freeze="True">M4,12 A8,8 0 1 0 6.5,6.2 M4,3.5 V7.5 H8</Geometry>
+    <Geometry x:Key="Icon.RotateLeft" po:Freeze="True">M4,12 A8,8 0 1 0 6.5,6.2 M4,3.5 V7.5 H8</Geometry>
+    <Geometry x:Key="Icon.RotateRight" po:Freeze="True">M20,12 A8,8 0 1 1 17.5,6.2 M20,3.5 V7.5 H16</Geometry>
+    <Geometry x:Key="Icon.Rotate180" po:Freeze="True">M5,14 A7,7 0 0 1 19,14 M19,8 V14 H13 M8,18 H16</Geometry>
+    <Geometry x:Key="Icon.Flip" po:Freeze="True">M12,3 V21 M9,6 L3.5,18 H9 Z M15,6 L20.5,18 H15 Z</Geometry>
+    <Geometry x:Key="Icon.Merge" po:Freeze="True">M5,4 V8 A4,4 0 0 0 9,12 H15 A4,4 0 0 1 19,16 V20 M19,4 V8 A4,4 0 0 1 15,12 M9,12 A4,4 0 0 0 5,16 V20 M12,12 V4 M9.5,6.5 L12,4 L14.5,6.5</Geometry>
+    <Geometry x:Key="Icon.Erase" po:Freeze="True">M14.5,4.5 L19.5,9.5 L10,19 H5.5 L3.5,17 A1.4,1.4 0 0 1 3.5,15 Z M9,10 L14,15 M10,19 H20</Geometry>
+    <Geometry x:Key="Icon.Text" po:Freeze="True">M4,7 V5 H20 V7 M12,5 V19 M9,19 H15</Geometry>
+    <Geometry x:Key="Icon.Scan" po:Freeze="True">M4,8 V5 A1,1 0 0 1 5,4 H8 M16,4 H19 A1,1 0 0 1 20,5 V8 M20,16 V19 A1,1 0 0 1 19,20 H16 M8,20 H5 A1,1 0 0 1 4,19 V16 M8,9 H16 M8,12 H16 M8,15 H13</Geometry>
+    <Geometry x:Key="Icon.Extract" po:Freeze="True">M4,8 H20 V19 A1,1 0 0 1 19,20 H5 A1,1 0 0 1 4,19 Z M3,4.5 H21 V8 H3 Z M12,17 V11 M9.5,13.5 L12,11 L14.5,13.5</Geometry>
+    <Geometry x:Key="Icon.Zip" po:Freeze="True">M4,8 H20 V19 A1,1 0 0 1 19,20 H5 A1,1 0 0 1 4,19 Z M3,4.5 H21 V8 H3 Z M12,11 V17 M9.5,14.5 L12,17 L14.5,14.5</Geometry>
+    <Geometry x:Key="Icon.Waveform" po:Freeze="True">M3,12 H5 M7,8 V16 M10,5 V19 M13,9 V15 M16,6.5 V17.5 M19,10 V14 M21,12 H21.01</Geometry>
+    <Geometry x:Key="Icon.Format" po:Freeze="True">M4,6 H20 M4,10 H14 M8,14 H20 M8,18 H16</Geometry>
+    <Geometry x:Key="Icon.Minify" po:Freeze="True">M4,9 H20 M4,15 H20 M9,4.5 L12,7.5 L15,4.5 M9,19.5 L12,16.5 L15,19.5</Geometry>
+    <Geometry x:Key="Icon.Gif" po:Freeze="True">M4,5 H20 A1,1 0 0 1 21,6 V18 A1,1 0 0 1 20,19 H4 A1,1 0 0 1 3,18 V6 A1,1 0 0 1 4,5 Z M10,10 H7.5 V14 H10 V12.5 M12.5,10 V14 M15.5,14 V10 H18 M15.5,12 H17.5</Geometry>
+
+    <!-- Shell actions -->
+    <Geometry x:Key="Icon.More" po:Freeze="True">M5,12 H5.01 M12,12 H12.01 M19,12 H19.01</Geometry>
+    <Geometry x:Key="Icon.Copy" po:Freeze="True">M9,8 H18 A1,1 0 0 1 19,9 V19 A1,1 0 0 1 18,20 H9 A1,1 0 0 1 8,19 V9 A1,1 0 0 1 9,8 Z M16,8 V5 A1,1 0 0 0 15,4 H6 A1,1 0 0 0 5,5 V15 A1,1 0 0 0 6,16 H8</Geometry>
+    <Geometry x:Key="Icon.Link" po:Freeze="True">M10,14 A4.2,4.2 0 0 0 16,14 L18.5,11.5 A4.2,4.2 0 0 0 12.5,5.5 L11.5,6.5 M14,10 A4.2,4.2 0 0 0 8,10 L5.5,12.5 A4.2,4.2 0 0 0 11.5,18.5 L12.5,17.5</Geometry>
+    <Geometry x:Key="Icon.Name" po:Freeze="True">M4.5,7 H19.5 A1.5,1.5 0 0 1 21,8.5 V15.5 A1.5,1.5 0 0 1 19.5,17 H4.5 A1.5,1.5 0 0 1 3,15.5 V8.5 A1.5,1.5 0 0 1 4.5,7 Z M12,9.5 V14.5 M10.5,9.5 H13.5 M10.5,14.5 H13.5</Geometry>
+    <Geometry x:Key="Icon.Terminal" po:Freeze="True">M4,5 H20 A1,1 0 0 1 21,6 V18 A1,1 0 0 1 20,19 H4 A1,1 0 0 1 3,18 V6 A1,1 0 0 1 4,5 Z M7,9.5 L10,12 L7,14.5 M12.5,15 H17</Geometry>
+    <Geometry x:Key="Icon.Reveal" po:Freeze="True">M3,7 V18 A1,1 0 0 0 4,19 H11 M3,7 V6 A1,1 0 0 1 4,5 H10 L12,8 H20 A1,1 0 0 1 21,9 V11 M17,20 A3,3 0 1 0 16.99,20 Z M19.2,19.2 L21,21</Geometry>
+    <Geometry x:Key="Icon.Pin" po:Freeze="True">M9,4 H15 M10,4 V9.5 L6.5,13.5 H17.5 L14,9.5 V4 M12,13.5 V20.5</Geometry>
+    <Geometry x:Key="Icon.Share" po:Freeze="True">M12,15 V3.5 M8,7.5 L12,3.5 L16,7.5 M8,11 H6 A1,1 0 0 0 5,12 V20 A1,1 0 0 0 6,21 H18 A1,1 0 0 0 19,20 V12 A1,1 0 0 0 18,11 H16</Geometry>
+    <Geometry x:Key="Icon.Hash" po:Freeze="True">M9,4 L7,20 M17,4 L15,20 M4,9 H20 M3,15 H19</Geometry>
+    <Geometry x:Key="Icon.Clipboard" po:Freeze="True">M9,4 H15 V7 H9 Z M15,5.5 H18 A1,1 0 0 1 19,6.5 V20 A1,1 0 0 1 18,21 H6 A1,1 0 0 1 5,20 V6.5 A1,1 0 0 1 6,5.5 H9 M8.5,12 H15.5 M8.5,16 H13</Geometry>
+
+    <!-- States -->
+    <Geometry x:Key="Icon.Check" po:Freeze="True">M5,12.5 L10,17.5 L19,7.5</Geometry>
+    <Geometry x:Key="Icon.Close" po:Freeze="True">M6,6 L18,18 M18,6 L6,18</Geometry>
+    <Geometry x:Key="Icon.Alert" po:Freeze="True">M12,8 V13 M12,16.5 V16.51 M12,3.5 A8.5,8.5 0 1 1 11.99,3.5 Z</Geometry>
+    <Geometry x:Key="Icon.Cancel" po:Freeze="True">M12,3.5 A8.5,8.5 0 1 1 11.99,3.5 Z M6,6 L18,18</Geometry>
+</ResourceDictionary>

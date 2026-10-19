@@ -1,0 +1,10 @@
+{
+  "id": "tamarillo",
+  "version": "0.1.0",
+  "entryAssembly": "Tamarillo.Module.dll",
+  "entryType": "Tamarillo.TamarilloModule",
+  "sdkVersion": 1,
+  "activation": "startup",
+  "settings": true,
+  "loadMode": "memory"
+}

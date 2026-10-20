@@ -98,5 +98,31 @@
             </StackPanel>
             <Button x:Name="Redetect" Grid.Column="1" Style="{StaticResource Button.Ghost}" ui:Ui.Icon="&#xE72C;" Content="Verificar de novo" Click="OnRedetect" VerticalAlignment="Center" />
         </Grid>
+
+        <!-- About -->
+        <TextBlock Text="Sobre" Style="{StaticResource Text.Overline}" Margin="0,28,0,0" />
+        <Grid Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Versão instalada" Style="{StaticResource Text.BodyStrong}" VerticalAlignment="Center" />
+            <TextBlock x:Name="VersionText" Grid.Column="1" Style="{StaticResource Text.Secondary}" VerticalAlignment="Center" />
+        </Grid>
+
+        <!-- Wheel entries -->
+        <TextBlock Text="Itens da roda" Style="{StaticResource Text.Overline}" Margin="0,28,0,0" />
+        <TextBlock Text="Desmarque o que você não usa. O que este PC não consegue fazer já fica de fora sozinho." Style="{StaticResource Text.Caption}" TextWrapping="Wrap" Margin="0,8,0,0" />
+        <Grid Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ComboBox x:Name="MenuSections" MinWidth="220" HorizontalAlignment="Left" SelectionChanged="OnMenuSectionChanged"
+                      AutomationProperties.Name="Tipo de arquivo" />
+            <Button x:Name="ShowAll" Grid.Column="1" Style="{StaticResource Button.Ghost}" ui:Ui.Icon="&#xE7A7;" Content="Mostrar tudo" Click="OnShowAll"
+                    VerticalAlignment="Center" ToolTip="Volta a mostrar todos os itens, de todos os tipos" />
+        </Grid>
+        <StackPanel x:Name="MenuEntries" Margin="0,12,0,0" />
     </StackPanel>
 </UserControl>

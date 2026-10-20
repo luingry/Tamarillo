@@ -1,6 +1,6 @@
 {
   "id": "tamarillo",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "entryAssembly": "Tamarillo.Module.dll",
   "entryType": "Tamarillo.TamarilloModule",
   "sdkVersion": 1,
@@ -8,6 +8,13 @@
   "settings": true,
   "loadMode": "memory",
   "releaseNotes": [
+    {
+      "version": "0.2.0",
+      "notes": [
+        "Settings: choose which actions each wheel and sub-ring shows; hidden items free their slot for the rest.",
+        "Settings show the installed version."
+      ]
+    },
     {
       "version": "0.1.0",
       "notes": [

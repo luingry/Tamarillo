@@ -41,6 +41,46 @@ namespace Tamarillo.Operations
         public bool IsGroup => Children != null && Children.Count > 0;
     }
 
+    /// <summary>One entry of the settings catalog; <see cref="Key"/> is what <see cref="Core.TamarilloSettings.HiddenItems"/> stores.</summary>
+    public sealed class MenuEntry
+    {
+        public MenuEntry(string key, string title, string badge, IReadOnlyList<MenuEntry> children)
+        {
+            Key = key;
+            Title = title;
+            Badge = badge;
+            Children = children;
+        }
+
+        public string Key { get; }
+
+        public string Title { get; }
+
+        public string Badge { get; }
+
+        public IReadOnlyList<MenuEntry> Children { get; }
+    }
+
+    /// <summary>The wheel of one file kind (or the shared file actions), as listed in the settings.</summary>
+    public sealed class MenuSection
+    {
+        public MenuSection(string key, string title, IReadOnlyList<MenuEntry> entries)
+        {
+            Key = key;
+            Title = title;
+            Entries = entries;
+        }
+
+        public string Key { get; }
+
+        public string Title { get; }
+
+        public IReadOnlyList<MenuEntry> Entries { get; }
+
+        /// <summary>What a ComboBox shows (the host template ignores DisplayMemberPath in the selection box).</summary>
+        public override string ToString() => Title;
+    }
+
     /// <summary>What the wheel needs from the module for UI-bound actions.</summary>
     public interface IWheelHost
     {
@@ -61,12 +101,158 @@ namespace Tamarillo.Operations
         public const int MaxSlots = 8;
         public const int MaxSubItems = 8;
 
-        public static IReadOnlyList<MenuNode> Build(FileSet files, Capabilities caps, IWheelHost host)
+        /// <summary>Key prefix of the file actions ("Mais"), shared by every kind.</summary>
+        public const string FilesSection = "files";
+
+        /// <summary>
+        /// The wheel for <paramref name="files"/>. <paramref name="hidden"/> holds keys the user turned off
+        /// (see <see cref="Catalog"/>); they are removed before the slot limits apply, so they free room.
+        /// </summary>
+        public static IReadOnlyList<MenuNode> Build(FileSet files, Capabilities caps, IWheelHost host, ICollection<string> hidden = null)
         {
             if (files == null || files.Count == 0)
             {
                 return Array.Empty<MenuNode>();
             }
+            IReadOnlyList<MenuNode> all = BuildAll(files, caps, host, out string section);
+            return Prune(all, section, hidden, MaxSlots);
+        }
+
+        /// <summary>Key of the section a file set's own actions live in ("image"); <see cref="FilesSection"/> when only file actions apply.</summary>
+        public static string SectionOf(FileKind kind)
+        {
+            switch (kind)
+            {
+                case FileKind.Image: return "image";
+                case FileKind.Video: return "video";
+                case FileKind.Audio: return "audio";
+                case FileKind.Pdf: return "pdf";
+                case FileKind.Document: return "document";
+                case FileKind.Text: return "text";
+                case FileKind.Spreadsheet: return "spreadsheet";
+                case FileKind.Presentation: return "presentation";
+                case FileKind.Subtitle: return "subtitle";
+                case FileKind.Data: return "data";
+                case FileKind.Archive: return "archive";
+                default: return FilesSection;
+            }
+        }
+
+        /// <summary>Key of a child of the node with key <paramref name="parentKey"/>; "Mais" holds the shared file actions.</summary>
+        private static string ChildPrefix(string parentKey, MenuNode parent) => parent.Id == "more" ? FilesSection : parentKey;
+
+        /// <summary>Drops hidden entries and groups left empty, then applies the slot limits.</summary>
+        private static IReadOnlyList<MenuNode> Prune(IReadOnlyList<MenuNode> nodes, string prefix, ICollection<string> hidden, int max)
+        {
+            var kept = new List<MenuNode>();
+            foreach (MenuNode node in nodes)
+            {
+                string key = prefix + "/" + node.Id;
+                if (hidden != null && hidden.Contains(key))
+                {
+                    continue;
+                }
+                if (node.IsGroup)
+                {
+                    IReadOnlyList<MenuNode> children = Prune(node.Children, ChildPrefix(key, node), hidden, MaxSubItems);
+                    if (children.Count == 0)
+                    {
+                        continue;
+                    }
+                    kept.Add(new MenuNode(node.Id, node.Label, node.Title, node.Icon, node.Operation, children, node.Badge));
+                }
+                else
+                {
+                    kept.Add(node);
+                }
+                if (kept.Count == max)
+                {
+                    break;
+                }
+            }
+            return kept;
+        }
+
+        // ═══ Settings catalog ═══
+
+        /// <summary>
+        /// Every entry the wheel can ever show, by section, for the settings page: built as if every optional
+        /// engine were present, from sample sets that together cover the per-format and per-count variants.
+        /// </summary>
+        public static IReadOnlyList<MenuSection> Catalog(IWheelHost host)
+        {
+            var sections = new List<MenuSection>
+            {
+                Section(host, "Imagens", @"a.jpg", @"a.png"),
+                Section(host, "Vídeos", @"a.mp4", @"a.mov"),
+                Section(host, "Áudios", @"a.mp3", @"a.wav"),
+                Section(host, "PDFs", @"a.pdf"),
+                Section(host, "Documentos", @"a.docx", @"a.odt"),
+                Section(host, "Textos", @"a.txt", @"a.md"),
+                Section(host, "Planilhas", @"a.xlsx", @"a.ods"),
+                Section(host, "Apresentações", @"a.pptx", @"a.odp"),
+                Section(host, "Legendas", @"a.srt", @"a.vtt"),
+                Section(host, "Dados", @"a.csv", @"a.json"),
+                Section(host, "Compactados", @"a.zip"),
+            };
+            List<MenuEntry> files = null;
+            foreach (FileSet sample in new[] { FileSet.Virtual(@"C:\c\a.jpg"), FileSet.Virtual(@"C:\c\a.bin"), FileSet.Virtual(@"C:\c\d\") })
+            {
+                files = Merge(files, Entries(ShellActions(sample, Capabilities.Everything, host), FilesSection));
+            }
+            sections.Add(new MenuSection(FilesSection, "Ações de arquivo (Mais)", files));
+            return sections;
+        }
+
+        private static MenuSection Section(IWheelHost host, string title, params string[] samples)
+        {
+            List<MenuEntry> entries = null;
+            string key = null;
+            foreach (string sample in samples)
+            {
+                IReadOnlyList<MenuNode> nodes = BuildAll(FileSet.Virtual(@"C:\c\" + sample), Capabilities.Everything, host, out key);
+                entries = Merge(entries, Entries(nodes, key));
+            }
+            return new MenuSection(key, title, entries);
+        }
+
+        private static List<MenuEntry> Entries(IEnumerable<MenuNode> nodes, string prefix) =>
+            nodes.Select(n =>
+            {
+                string key = prefix + "/" + n.Id;
+                // "Mais" is one switch here; its contents are the shared file-actions section.
+                List<MenuEntry> children = n.IsGroup && n.Id != "more" ? Entries(n.Children, ChildPrefix(key, n)) : new List<MenuEntry>();
+                return new MenuEntry(key, n.Title, n.Badge, children);
+            }).ToList();
+
+        /// <summary>Union of two variants of one menu; an entry only <paramref name="b"/> has lands after its predecessor in <paramref name="b"/>.</summary>
+        private static List<MenuEntry> Merge(List<MenuEntry> a, List<MenuEntry> b)
+        {
+            if (a == null)
+            {
+                return b;
+            }
+            var result = new List<MenuEntry>(a);
+            for (int i = 0; i < b.Count; i++)
+            {
+                int existing = result.FindIndex(e => e.Key == b[i].Key);
+                if (existing >= 0)
+                {
+                    if (b[i].Children.Count > 0)
+                    {
+                        result[existing] = new MenuEntry(result[existing].Key, result[existing].Title, result[existing].Badge, Merge(result[existing].Children.ToList(), b[i].Children.ToList()));
+                    }
+                    continue;
+                }
+                int after = i == 0 ? -1 : result.FindIndex(e => e.Key == b[i - 1].Key);
+                result.Insert(after + 1, b[i]);
+            }
+            return result;
+        }
+
+        /// <summary>Everything that applies to <paramref name="files"/>, before hiding and slot limits.</summary>
+        private static IReadOnlyList<MenuNode> BuildAll(FileSet files, Capabilities caps, IWheelHost host, out string section)
+        {
             var items = new List<MenuNode>();
             switch (files.Kind)
             {
@@ -87,10 +273,12 @@ namespace Tamarillo.Operations
             if (items.Count == 0)
             {
                 // Folders, mixed or unknown files: the file actions are the wheel.
-                return shell.Take(MaxSlots).ToList();
+                section = FilesSection;
+                return shell;
             }
+            section = SectionOf(files.Kind);
             items.Add(Group("more", "Mais", "Mais ações", "Icon.More", shell));
-            return items.Take(MaxSlots).ToList();
+            return items;
         }
 
         private static void AddImage(List<MenuNode> items, FileSet files, Capabilities caps)
@@ -314,7 +502,7 @@ namespace Tamarillo.Operations
             {
                 actions.Insert(1, Action("targz", "TAR.GZ", "Compactar em TAR.GZ", "Icon.Archive", new TarGzOperation()));
             }
-            return actions.Take(MaxSubItems).ToList();
+            return actions;
         }
 
         private static string[] Aliases(string ext)
@@ -332,7 +520,7 @@ namespace Tamarillo.Operations
             new MenuNode(id, label, title, icon, operation, badge: badge);
 
         private static MenuNode Group(string id, string label, string title, string icon, IEnumerable<MenuNode> children) =>
-            new MenuNode(id, label, title, icon, children: children.Take(MaxSubItems).ToList());
+            new MenuNode(id, label, title, icon, children: children.ToList());
 
         private static MenuNode Format(string ext, Operation operation) =>
             new MenuNode("to-" + ext, ext.ToUpperInvariant(), "Converter para " + ext.ToUpperInvariant(), "Icon.Convert", operation, badge: ext.ToUpperInvariant());

@@ -1,5 +1,10 @@
 # Resolved errors
 
+## 2026-10-19 — CI: `Tests failed.` although every test passed (exit code 0xC000000D)
+
+- Cause: on the GitHub Windows Server runner the test process fails fast with STATUS_INVALID_PARAMETER while tearing down after `Main` returned 0 (WinRT / Media Foundation components used by the tests). `Environment.Exit` hangs there instead. Not reproducible on a desktop machine.
+- Solution: `module-release.yml` builds with `-SkipTests` and runs the tests in their own step, judged by the `N passed, 0 failed` line. Locally `scripts/build.ps1` still uses the exit code.
+
 ## 2026-10-19 — Accented text turned into `Ã§`, `â•` after an edit
 
 - Cause: Windows PowerShell 5 `Get-Content`/`Set-Content` read UTF-8 without BOM as ANSI and wrote it back.

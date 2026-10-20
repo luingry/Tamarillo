@@ -18,7 +18,7 @@ Sources: `src/Tamarillo/Theme/` — `Tokens.xaml` (merges the host tokens), `Ico
 |---|---|
 | Materials | `Tama.Ring` (95% Surface2-ish segment fill) · `Tama.Hub` · `Tama.Rim` · `Tama.Brand #E65A70` (brand only: catalog tile, never state) |
 | Radial geometry | `Radial.Hub 50` · `Radial.Inner 58` · `Radial.Outer 138` · `Radial.SubInner 146` · `Radial.SubOuter 198` · `Radial.Gap 4` · `Radial.Corner 9` · `Radial.SubItemAngle 30` (max; long lists tighten to fit 210°) · `Radial.Margin 28` · `Radial.IconSize 22` · `Radial.SubIconSize 18` |
-| Motion | `Motion.Wheel.In 260ms` (with `Ease.Pop`) · `Motion.Wheel.Stagger 16ms` · `Motion.Wheel.Out 140ms` (`Ease.In`) · `Motion.Highlight 160ms` · `Motion.Dwell 260ms` (hover to open a group) · `Motion.SubRing.In 220ms` · `Motion.Overlay.In 320ms` · `Motion.Overlay.Out 180ms` · `Motion.Check 420ms` |
+| Motion | `Motion.Wheel.In 260ms` (with `Ease.Pop`) · `Motion.Wheel.Stagger 16ms` · `Motion.Wheel.Out 140ms` (`Ease.In`) · `Motion.Highlight 160ms` · `Motion.SubRing.In 220ms` · `Motion.Overlay.In 320ms` · `Motion.Overlay.Out 180ms` · `Motion.Check 420ms` |
 | Easing | `Ease.Pop` (BackEase out, amplitude 0.32: one small overshoot) · `Ease.In` |
 | Overlay | `Overlay.Width 360` · `Overlay.Ring 36` · `Overlay.RingStroke 3` |
 | Icons | `Icon.Stroke 1.8` |
@@ -45,7 +45,7 @@ Kinds: `Image Video Audio Document Pdf Table Slides Archive Folder Subtitles Cod
 
 - **Drag mode:** chord + mouse button down → an invisible drop target appears under the cursor; on DragEnter with files the wheel animates in. Drop on a slot = run; centre = cancel (cursor shows "no"); dragging out of the wheel dismisses it. Drop on a group opens its sub-ring and waits for a click.
 - **Hold mode:** chord without a drag, Explorer in front, files selected → after 140 ms the wheel opens; point and **release the chord** to run. Arrows/Tab move, Enter runs/opens, Esc goes back/closes (the wheel owns these keys only while open).
-- **Marking-menu geometry:** anywhere outward selects by angle (huge targets); pushing past the outer edge of a group opens it at once, hovering opens it after `Motion.Dwell`. Selection arms only after 6 px of movement so a wheel clamped to a screen edge never fires what happens to be under the cursor.
+- **Marking-menu geometry:** anywhere outward selects by angle (huge targets); hovering a group opens its sub-ring at once (no dwell: a delay reads as lag). Selection arms only after 6 px of movement so a wheel clamped to a screen edge never fires what happens to be under the cursor.
 - **Copy, never move:** the wheel always answers the drag source with Copy, so a source can never delete what was dropped.
 
 ## Copy (pt-BR)

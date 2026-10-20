@@ -39,8 +39,7 @@ namespace Tamarillo.Ui
     /// </summary>
     /// <remarks>
     /// Interaction model (a marking menu): the centre is "cancel"; anywhere outward selects by angle, so
-    /// targets are huge and a flick is enough. Hovering a group for <c>Motion.Dwell</c>, or moving past the
-    /// ring's outer edge, opens its sub-ring. Selection only arms after the pointer has moved a few pixels,
+    /// targets are huge and a flick is enough. Hovering a group opens its sub-ring at once. Selection only arms after the pointer has moved a few pixels,
     /// so a wheel that appears clamped to a screen edge never fires what happens to be under the cursor.
     /// Rendering: every element is a frozen geometry; motion is opacity and render transforms only.
     /// Children are not hit-testable: the window itself is the only drop target, so DragEnter/DragLeave fire
@@ -66,7 +65,6 @@ namespace Tamarillo.Ui
         private readonly TextBlock _hubTitle = new TextBlock();
         private readonly TextBlock _hubCaption = new TextBlock();
         private readonly StackPanel _hubText = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center };
-        private readonly DispatcherTimer _dwell;
         private readonly DispatcherTimer _armTimeout;
         private readonly List<Slot> _slots = new List<Slot>();
         private readonly List<Slot> _subSlots = new List<Slot>();
@@ -77,7 +75,6 @@ namespace Tamarillo.Ui
         private int _top = -1;
         private int _openGroup = -1;
         private int _subIndex = -1;
-        private int _dwellCandidate = -1;
         private Point? _origin;
         private bool _armed;
         private bool _hadMouse;
@@ -117,15 +114,6 @@ namespace Tamarillo.Ui
             BuildChrome();
             Content = _root;
 
-            _dwell = new DispatcherTimer(DispatcherPriority.Input) { Interval = Theme.Milliseconds("Motion.Dwell") == TimeSpan.Zero ? TimeSpan.FromMilliseconds(1) : Theme.Milliseconds("Motion.Dwell") };
-            _dwell.Tick += (s, e) =>
-            {
-                _dwell.Stop();
-                if (_dwellCandidate >= 0 && _dwellCandidate == _top)
-                {
-                    OpenGroup(_top);
-                }
-            };
             _armTimeout = new DispatcherTimer(DispatcherPriority.Normal) { Interval = TimeSpan.FromMilliseconds(700) };
             _armTimeout.Tick += (s, e) =>
             {
@@ -223,7 +211,7 @@ namespace Tamarillo.Ui
             OnPointer(position);
         }
 
-        /// <summary>Dev/test hook: opens a group without waiting for the dwell.</summary>
+        /// <summary>Dev/test hook: opens a group without moving the pointer.</summary>
         internal void SimulateOpenGroup(int index) => OpenGroup(index);
 
         internal Point Center => _center;
@@ -239,12 +227,10 @@ namespace Tamarillo.Ui
         private void ResetState()
         {
             _armTimeout.Stop();
-            _dwell.Stop();
             _closing = false;
             _top = -1;
             _openGroup = -1;
             _subIndex = -1;
-            _dwellCandidate = -1;
             _origin = null;
             _armed = false;
             _hadMouse = false;
@@ -467,6 +453,7 @@ namespace Tamarillo.Ui
             {
                 Slot slot = _slots[i];
                 TimeSpan begin = TimeSpan.FromTicks(stagger.Ticks * i);
+                HideUntilAnimated(slot, 0.9);
                 var fade = new DoubleAnimation(0, 1, Theme.Duration("Motion.Normal")) { BeginTime = begin, EasingFunction = ease, FillBehavior = FillBehavior.HoldEnd };
                 slot.Layer.BeginAnimation(OpacityProperty, fade);
                 slot.Background.BeginAnimation(OpacityProperty, fade);
@@ -474,6 +461,22 @@ namespace Tamarillo.Ui
                 slot.Scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
                 slot.Scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
             }
+        }
+
+        /// <summary>
+        /// Gives a slot the values its entrance animation starts from. A staggered animation does not apply
+        /// its From before its BeginTime, so without this the slot shows fully for the delay, then blinks.
+        /// </summary>
+        private static void HideUntilAnimated(Slot slot, double scale)
+        {
+            if (!Theme.Animate)
+            {
+                return;
+            }
+            slot.Layer.Opacity = 0;
+            slot.Background.Opacity = 0;
+            slot.Scale.ScaleX = scale;
+            slot.Scale.ScaleY = scale;
         }
 
         public void Dismiss(bool animated = true) => Close(animated, chosen: null);
@@ -485,7 +488,6 @@ namespace Tamarillo.Ui
                 return;
             }
             _closing = true;
-            _dwell.Stop();
             _armTimeout.Stop();
             WheelMode previous = _mode;
             _mode = WheelMode.Hidden;
@@ -569,11 +571,6 @@ namespace Tamarillo.Ui
             }
             int top = _slots.Count == 0 ? -1 : RadialGeometry.SlotAt(angle, _slots.Count);
             Select(top, -1);
-            // Pushing past the outer edge of a group opens it at once; otherwise it opens on dwell.
-            if (top >= 0 && _items[top].IsGroup && _openGroup != top && radius > _outer + _gap)
-            {
-                OpenGroup(top);
-            }
         }
 
         private void Select(int top, int sub)
@@ -581,16 +578,14 @@ namespace Tamarillo.Ui
             if (top != _top)
             {
                 _top = top;
-                _dwell.Stop();
-                _dwellCandidate = -1;
                 if (_openGroup >= 0 && _openGroup != top)
                 {
                     CloseGroup();
                 }
-                if (top >= 0 && _items[top].IsGroup && _openGroup != top)
+                // Hovering a group reveals its sub-ring at once: any delay here reads as lag.
+                if (top >= 0 && _items[top].IsGroup)
                 {
-                    _dwellCandidate = top;
-                    _dwell.Start();
+                    OpenGroup(top);
                 }
                 MoveHighlight(top);
             }
@@ -690,6 +685,7 @@ namespace Tamarillo.Ui
                 // Items unfold from the group outward, nearest first.
                 double distance = Math.Abs(i - (children.Count - 1) / 2.0);
                 var begin = TimeSpan.FromTicks((long)(stagger.Ticks * distance));
+                HideUntilAnimated(slot, 0.92);
                 var fade = new DoubleAnimation(0, 1, Theme.Duration("Motion.SubRing.In")) { BeginTime = begin, EasingFunction = ease };
                 slot.Layer.BeginAnimation(OpacityProperty, fade);
                 slot.Background.BeginAnimation(OpacityProperty, fade);

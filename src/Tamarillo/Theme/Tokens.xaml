@@ -50,8 +50,6 @@
     <Duration x:Key="Motion.Wheel.Out">0:0:0.14</Duration>
     <!-- Highlight glides between segments instead of jumping. -->
     <Duration x:Key="Motion.Highlight">0:0:0.16</Duration>
-    <!-- Hovering a group this long opens its sub-ring (moving past the outer edge opens it at once). -->
-    <sys:Double x:Key="Motion.Dwell">260</sys:Double>
     <Duration x:Key="Motion.SubRing.In">0:0:0.22</Duration>
     <Duration x:Key="Motion.Overlay.In">0:0:0.32</Duration>
     <Duration x:Key="Motion.Overlay.Out">0:0:0.18</Duration>

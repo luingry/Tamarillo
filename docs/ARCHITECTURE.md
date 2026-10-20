@@ -41,6 +41,6 @@ During work: heavy operations run off the UI thread at below-normal priority (ex
 ## Adding an action
 
 1. Write an `Operation` (usually a `PerFileOperation`: implement `TargetExtension` and `TransformAsync`, write only to the temp path you are given).
-2. Offer it in `MenuBuilder` only when it will work for every item on this PC (check `Capabilities`).
+2. Offer it in `MenuBuilder` only when it will work for every item on this PC (check `Capabilities`). Its id is part of a settings key (`image/convert/to-gif`, `files/zip` for the shared "Mais" actions) that users hide entries by: never rename an id. `MenuBuilder.Catalog` lists it in the settings on its own, as long as one of its sample sets reaches it.
 3. Pick or draw an icon in `Icons.xaml` (24 grid, 1.8 stroke), write the label (≤ 12 chars) and the hub sentence.
 4. Add a real-file test in `tests/Tamarillo.Tests`.

@@ -44,3 +44,8 @@
 
 - Cause: `VisualBrush` maps the visual's content bounds, not its layout box.
 - Solution: `Viewbox = new Rect(0, 0, width, height)`, `ViewboxUnits = Absolute`.
+
+## 2026-10-19 — Settings ComboBox showed `Tamarillo.Operations.MenuSection` instead of the title
+
+- Cause: the host's ComboBox template draws the selection box from `SelectionBoxItem` with no item template, so `DisplayMemberPath` only reaches the drop-down list.
+- Solution: bind plain objects whose `ToString()` returns the display text (`MenuSection.ToString() => Title`), or give the items a `DataTemplate`.

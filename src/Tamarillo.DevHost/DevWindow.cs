@@ -44,6 +44,7 @@ namespace Tamarillo.DevHost
             Grid.SetRow(page, 1);
             grid.Children.Add(page);
             var settingsScroll = new ScrollViewer { Content = settingsCard };
+            SettingsScroll = settingsScroll;
             Grid.SetRow(settingsScroll, 1);
             Grid.SetColumn(settingsScroll, 1);
             grid.Children.Add(settingsScroll);
@@ -54,5 +55,8 @@ namespace Tamarillo.DevHost
 
             Loaded += (s, e) => (page as IModuleViewLifecycle)?.OnViewShown();
         }
+
+        /// <summary>For snapshots of the lower part of the settings.</summary>
+        public ScrollViewer SettingsScroll { get; }
     }
 }

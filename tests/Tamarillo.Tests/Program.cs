@@ -154,6 +154,34 @@ namespace Tamarillo.Tests
             IReadOnlyList<MenuNode> json = MenuBuilder.Build(FileSet.Virtual(@"C:\d\a.json"), _caps, host);
             Assert(json.Any(n => n.Id == "json-format") && json.Any(n => n.Id == "json-minify"), "JSON tools");
             Assert(MenuBuilder.Build(FileSet.Virtual(), _caps, host).Count == 0, "empty set");
+
+            // Hidden entries
+            FileSet jpg = FileSet.Virtual(@"C:\a\1.jpg");
+            IReadOnlyList<MenuNode> trimmed = MenuBuilder.Build(jpg, _caps, host, new[] { "image/compress", "image/convert/to-png", "files/zip" });
+            Assert(trimmed.All(n => n.Id != "compress"), "hidden action");
+            Assert(trimmed.First(n => n.Id == "convert").Children.All(c => c.Id != "to-png"), "hidden sub-item");
+            Assert(trimmed.First(n => n.Id == "more").Children.All(c => c.Id != "zip"), "hidden file action");
+            IReadOnlyList<MenuNode> noRotate = MenuBuilder.Build(jpg, _caps, host, new[] { "image/rotate/rotate-left", "image/rotate/rotate-right", "image/rotate/rotate-180", "image/rotate/flip" });
+            Assert(noRotate.All(n => n.Id != "rotate"), "group with every child hidden is dropped");
+            Assert(MenuBuilder.Build(FileSet.Virtual(@"C:\a\b\"), _caps, host, new[] { "files/zip" }).All(n => n.Id != "zip"), "hidden on the files-only wheel");
+
+            // Catalog covers every variant
+            IReadOnlyList<MenuSection> catalog = MenuBuilder.Catalog(host);
+            MenuSection image = catalog.First(s => s.Key == "image");
+            List<string> formats = image.Entries.First(e => e.Key == "image/convert").Children.Select(c => c.Key).ToList();
+            Assert(formats.Contains("image/convert/to-jpg") && formats.Contains("image/convert/to-png") && formats.Contains("image/convert/to-avif"), "every image format");
+            Assert(formats.IndexOf("image/convert/to-jpg") == 0, "merged variants keep their order");
+            Assert(image.Entries.Any(e => e.Key == "image/more" && e.Children.Count == 0), "Mais is one switch per kind");
+            List<string> files = catalog.First(s => s.Key == MenuBuilder.FilesSection).Entries.Select(e => e.Key).ToList();
+            Assert(files.Contains("files/float") && files.Contains("files/targz") && files.Contains("files/hash"), "every file action");
+            Assert(catalog.Select(s => s.Key).Distinct().Count() == catalog.Count, "one section per kind");
+
+            // Settings round-trip
+            var settings = new TamarilloSettings { HiddenItems = new[] { "image/ocr", "image/ocr", "" } };
+            settings.Normalize();
+            TamarilloSettings back = SettingsStore.Deserialize(SettingsStore.Serialize(settings));
+            Assert(back.HiddenItems.Length == 1 && back.HiddenItems[0] == "image/ocr", "hidden items persist");
+            Assert(SettingsStore.Deserialize("{}").HiddenItems.Length == 0, "missing field defaults to nothing hidden");
         }
 
         private static void Subtitles()

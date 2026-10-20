@@ -91,6 +91,9 @@ namespace Tamarillo.DevHost
             window.Show();
             Pump(TimeSpan.FromMilliseconds(1200));
             Render((FrameworkElement)window.Content, Path.Combine(output, "pages.png"), (Brush)Application.Current.FindResource("Brush.Canvas"));
+            window.SettingsScroll.ScrollToVerticalOffset(window.SettingsScroll.ScrollableHeight * 0.5);
+            Pump(TimeSpan.FromMilliseconds(300));
+            Render((FrameworkElement)window.Content, Path.Combine(output, "pages-settings.png"), (Brush)Application.Current.FindResource("Brush.Canvas"));
             window.Close();
 
             Console.WriteLine("Snapshots written to " + output);

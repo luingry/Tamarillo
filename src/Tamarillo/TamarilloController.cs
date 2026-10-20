@@ -80,7 +80,7 @@ namespace Tamarillo
                 {
                     _wheel = new RadialWindow
                     {
-                        MenuProvider = files => MenuBuilder.Build(files, _capabilities, this),
+                        MenuProvider = files => MenuBuilder.Build(files, _capabilities, this, _settings.Current.HiddenItems),
                         ThumbnailProvider = path => ShellThumbnail.GetAsync(path, 192),
                     };
                     _wheel.Committed += (node, files) => _jobs.Run(node, files);
@@ -261,7 +261,7 @@ namespace Tamarillo
                 return;
             }
             FileSet files = FileSet.FromPaths(paths);
-            IReadOnlyList<MenuNode> items = MenuBuilder.Build(files, _capabilities, this);
+            IReadOnlyList<MenuNode> items = MenuBuilder.Build(files, _capabilities, this, _settings.Current.HiddenItems);
             if (items.Count > 0)
             {
                 NativeMethods.GetCursorPos(out cursor);
@@ -279,7 +279,7 @@ namespace Tamarillo
         public void ShowForFiles(IEnumerable<string> paths)
         {
             FileSet files = FileSet.FromPaths(paths);
-            IReadOnlyList<MenuNode> items = MenuBuilder.Build(files, _capabilities, this);
+            IReadOnlyList<MenuNode> items = MenuBuilder.Build(files, _capabilities, this, _settings.Current.HiddenItems);
             if (items.Count > 0 && NativeMethods.GetCursorPos(out NativeMethods.POINT cursor))
             {
                 Wheel.ShowClick(files, items, cursor);

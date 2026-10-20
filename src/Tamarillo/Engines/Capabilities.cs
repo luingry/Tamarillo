@@ -23,6 +23,23 @@ namespace Tamarillo.Engines
         /// <summary>Before detection finishes: only what Windows always has.</summary>
         public static Capabilities Baseline { get; } = new Capabilities { Tar = SystemTar() };
 
+        /// <summary>Every optional engine present: lists every action the wheel can ever offer (settings catalog). Never run with it.</summary>
+        public static Capabilities Everything { get; } = new Capabilities
+        {
+            WebpEncoder = true,
+            HeifEncoder = true,
+            Ocr = true,
+            Ffmpeg = "ffmpeg.exe",
+            Word = true,
+            Excel = true,
+            PowerPoint = true,
+            LibreOffice = "soffice.exe",
+            Tar = "tar.exe",
+            _everyEncoder = true,
+        };
+
+        private bool _everyEncoder;
+
         public bool WebpEncoder { get; private set; }
 
         public bool HeifEncoder { get; private set; }
@@ -45,7 +62,7 @@ namespace Tamarillo.Engines
 
         public bool HasFfmpeg => Ffmpeg != null;
 
-        public bool FfmpegHas(string encoder) => FfmpegEncoders.Contains(encoder);
+        public bool FfmpegHas(string encoder) => _everyEncoder || FfmpegEncoders.Contains(encoder);
 
         public bool CanWebp => WebpEncoder || FfmpegHas("libwebp");
 

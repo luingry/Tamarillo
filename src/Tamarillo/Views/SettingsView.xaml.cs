@@ -1,26 +1,35 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using Tamarillo.Core;
 using Tamarillo.Engines;
+using Tamarillo.Operations;
 
 namespace Tamarillo.Views
 {
-    /// <summary>The "Configurações" tab: shortcut, Explorer selection, output folder, JPG quality, optional engines.</summary>
+    /// <summary>The "Configurações" tab: shortcut, Explorer selection, output folder, JPG quality, optional engines, wheel entries, version.</summary>
     public partial class SettingsView
     {
         private readonly TamarilloController _controller;
         private bool _ready;
         private bool _recording;
         private Shortcut _seen;
+        private readonly List<CheckBox> _entryBoxes = new List<CheckBox>();
 
         public SettingsView(TamarilloController controller)
         {
             _controller = controller;
             Resources.MergedDictionaries.Add(Ui.Theme.Resources);
             InitializeComponent();
+            VersionText.Text = InstalledVersion();
+            MenuSections.ItemsSource = MenuBuilder.Catalog(controller);
             Load(controller.Settings.Current);
+            MenuSections.SelectedIndex = 0;
             controller.StatusChanged += () => Dispatcher.BeginInvoke(new Action(RefreshEngines));
             controller.Settings.Changed += s => Dispatcher.BeginInvoke(new Action(() => Load(s)));
             RefreshEngines();
@@ -45,7 +54,102 @@ namespace Tamarillo.Views
             Quality.Value = s.JpegQuality;
             QualityValue.Text = s.JpegQuality.ToString();
             FfmpegAuto.Visibility = string.IsNullOrEmpty(s.FfmpegPath) ? Visibility.Collapsed : Visibility.Visible;
+            ShowAll.Visibility = s.HiddenItems.Length > 0 ? Visibility.Visible : Visibility.Collapsed;
+            RefreshEntries(s);
             _ready = wasReady;
+        }
+
+        private static string InstalledVersion()
+        {
+            string version = typeof(SettingsView).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
+                ?? typeof(SettingsView).Assembly.GetName().Version.ToString(3);
+            int metadata = version.IndexOf('+');
+            return metadata < 0 ? version : version.Substring(0, metadata);
+        }
+
+        // ═══ Wheel entries ═══
+
+        private void OnMenuSectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            MenuEntries.Children.Clear();
+            _entryBoxes.Clear();
+            if (MenuSections.SelectedItem is MenuSection section)
+            {
+                AddEntries(MenuEntries, section.Entries);
+            }
+            bool wasReady = _ready;
+            _ready = false;
+            RefreshEntries(_controller.Settings.Current);
+            _ready = wasReady;
+        }
+
+        private void AddEntries(Panel panel, IReadOnlyList<MenuEntry> entries)
+        {
+            foreach (MenuEntry entry in entries)
+            {
+                var box = new CheckBox { Content = entry.Title, Tag = entry.Key, Margin = new Thickness(0, 4, 0, 4) };
+                box.Checked += OnEntryToggled;
+                box.Unchecked += OnEntryToggled;
+                panel.Children.Add(box);
+                _entryBoxes.Add(box);
+                if (entry.Children.Count > 0)
+                {
+                    // Indented under the group's box (18 box + 10 gap); off with the group.
+                    var children = new StackPanel { Margin = new Thickness(28, 0, 0, 6) };
+                    AddEntries(children, entry.Children);
+                    panel.Children.Add(children);
+                    box.Tag = new GroupTag(entry.Key, children);
+                }
+            }
+        }
+
+        private void RefreshEntries(TamarilloSettings s)
+        {
+            var hidden = new HashSet<string>(s.HiddenItems, StringComparer.Ordinal);
+            foreach (CheckBox box in _entryBoxes)
+            {
+                bool shown = !hidden.Contains(KeyOf(box));
+                box.IsChecked = shown;
+                if (box.Tag is GroupTag group)
+                {
+                    group.Children.IsEnabled = shown;
+                }
+            }
+        }
+
+        private void OnEntryToggled(object sender, RoutedEventArgs e)
+        {
+            var box = (CheckBox)sender;
+            if (box.Tag is GroupTag group)
+            {
+                group.Children.IsEnabled = box.IsChecked == true;
+            }
+            if (!_ready)
+            {
+                return;
+            }
+            string key = KeyOf(box);
+            bool show = box.IsChecked == true;
+            _controller.Settings.Update(s => s.HiddenItems = show
+                ? s.HiddenItems.Where(k => k != key).ToArray()
+                : s.HiddenItems.Concat(new[] { key }).ToArray());
+        }
+
+        private void OnShowAll(object sender, RoutedEventArgs e) => _controller.Settings.Update(s => s.HiddenItems = Array.Empty<string>());
+
+        private static string KeyOf(CheckBox box) => box.Tag is GroupTag group ? group.Key : (string)box.Tag;
+
+        private sealed class GroupTag
+        {
+            public GroupTag(string key, Panel children)
+            {
+                Key = key;
+                Children = children;
+            }
+
+            public string Key { get; }
+
+            public Panel Children { get; }
         }
 
         private void RefreshEngines()

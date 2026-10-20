@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
@@ -48,6 +49,9 @@ namespace Tamarillo.Core
 
         [DataMember] public bool OverlayPlaced { get; set; }
 
+        /// <summary>Wheel entries the user turned off, as <see cref="Operations.MenuBuilder"/> keys ("image/convert/to-gif"). Replace, never mutate.</summary>
+        [DataMember] public string[] HiddenItems { get; set; }
+
         [OnDeserializing]
         private void OnDeserializing(StreamingContext context) => ApplyDefaults();
 
@@ -63,6 +67,7 @@ namespace Tamarillo.Core
             CustomFolder = null;
             JpegQuality = 90;
             FfmpegPath = null;
+            HiddenItems = Array.Empty<string>();
         }
 
         public void Normalize()
@@ -75,6 +80,7 @@ namespace Tamarillo.Core
             {
                 Output = OutputLocation.SameFolder;
             }
+            HiddenItems = HiddenItems == null ? Array.Empty<string>() : HiddenItems.Where(k => !string.IsNullOrWhiteSpace(k)).Distinct(StringComparer.Ordinal).ToArray();
             JpegQuality = Math.Max(40, Math.Min(100, JpegQuality == 0 ? 90 : JpegQuality));
         }
 

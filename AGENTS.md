@@ -6,5 +6,6 @@
 - Outputs are written to a temp path and committed atomically; never overwrite a source; drops answer Copy only.
 - Offer an action only when it works for every item on this machine (`Capabilities`).
 - Edit UTF-8 files with the file tools, or with `[IO.File]` and an explicit UTF-8 encoding — never Windows PowerShell `Get-Content`/`Set-Content` (see ERRORS.md).
+- Releases: bumping `Version` in `Directory.Build.props` on `main` runs `.github/workflows/module-release.yml`, which publishes `vX.Y.Z` with `tamarillo-X.Y.Z.zip`; the SwissTechKnife catalog sync picks it up on its own. Add the version's English notes to `releaseNotes` in `src/Tamarillo/module.json` in the same change.
 - Run `powershell -File scripts/build.ps1` before handing off; record non-trivial fixes in `ERRORS.md`.
 - Visual changes: check them with `Tamarillo.DevHost.exe --snapshot <dir>`.

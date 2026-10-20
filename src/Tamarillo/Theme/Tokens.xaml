@@ -63,6 +63,11 @@
     <sys:Double x:Key="Overlay.Width">360</sys:Double>
     <sys:Double x:Key="Overlay.Ring">36</sys:Double>
     <sys:Double x:Key="Overlay.RingStroke">3</sys:Double>
+    <!-- Corner close button: cancels a running job, dismisses a finished one. -->
+    <sys:Double x:Key="Overlay.Close">24</sys:Double>
+    <sys:Double x:Key="Overlay.CloseIcon">12</sys:Double>
+    <!-- Finished cards leave by themselves after this (the timer pauses while the pointer is on the card). -->
+    <Duration x:Key="Overlay.AutoDismiss">0:0:10</Duration>
 
     <!-- Icon pens: every Tamarillo icon is a 24-grid stroke drawn with one of these. -->
     <sys:Double x:Key="Icon.Stroke">1.8</sys:Double>

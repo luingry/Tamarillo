@@ -2,7 +2,7 @@
 
 # Tamarillo
 
-A [SwissTechKnife](../SwissTechKnife) module for Windows, in the spirit of [Tangerine for Mac](https://tangerineformac.com/): **hold a shortcut while dragging files and a radial menu opens under the cursor** with what can be done with them. Drop on an action; the result lands next to the original, with progress in a small draggable overlay that ends with the output name, its folder and a green ✓ that dismisses it.
+A [SwissTechKnife](../SwissTechKnife) module for Windows, in the spirit of [Tangerine for Mac](https://tangerineformac.com/): **hold a shortcut while dragging files and a radial menu opens under the cursor** with what can be done with them. Drop on an action; the result lands next to the original, with progress in a small draggable overlay that ends with the output name, its folder and a green ✓, then leaves by itself after 10 seconds (or at once with its corner ×).
 
 - **Trigger:** `Ctrl + Alt + Shift` (editable) during any file drag — Explorer, desktop, any app that drags files. Without a drag, the same chord opens the wheel for the files selected in Explorer: point and release the keys.
 - **Context-aware:** the wheel only shows what works for *every* dragged item on *this* PC (images, video, audio, PDF, documents, spreadsheets, slides, subtitles, CSV/JSON, archives, folders).

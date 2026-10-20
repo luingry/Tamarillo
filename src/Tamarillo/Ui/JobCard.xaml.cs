@@ -12,9 +12,10 @@ using Tamarillo.Jobs;
 namespace Tamarillo.Ui
 {
     /// <summary>
-    /// One job in the overlay. Running: progress ring around the action icon, cancel on the right.
-    /// Done: the ring becomes a green check (click = dismiss), the title is the output name (click = open)
-    /// and the detail its folder (click = show in Explorer). Failed: alert disc (click = dismiss) and the reason.
+    /// One job in the overlay. Running: progress ring around the action icon. Done: the ring becomes a green
+    /// check, the title is the output name (click = open) and the detail its folder (click = show in Explorer).
+    /// Failed: alert disc and the reason. The corner X cancels a running job and dismisses a finished one;
+    /// finished cards also leave by themselves, the timer paused while the pointer is on the card.
     /// </summary>
     public partial class JobCard
     {
@@ -31,16 +32,26 @@ namespace Tamarillo.Ui
             {
                 _autoDismiss = new DispatcherTimer { Interval = autoDismissAfter.Value };
                 _autoDismiss.Tick += (s, e) => Leave();
+                MouseEnter += (s, e) => _autoDismiss.Stop();
+                MouseLeave += (s, e) =>
+                {
+                    if (IsFinished && !_leaving)
+                    {
+                        _autoDismiss.Start();
+                    }
+                };
             }
             job.PropertyChanged += OnJobChanged;
             Update(animate: false);
-            if (job.State == JobState.Done || job.State == JobState.Failed)
+            if (IsFinished)
             {
                 ShowFinished(animate: false);
             }
         }
 
         public Job Job { get; }
+
+        private bool IsFinished => Job.State == JobState.Done || Job.State == JobState.Failed;
 
         /// <summary>Raised once the exit animation has finished: remove the card.</summary>
         public event Action<JobCard> Left;
@@ -84,7 +95,7 @@ namespace Tamarillo.Ui
                     {
                         Leave();
                     }
-                    else if (Job.State == JobState.Done || Job.State == JobState.Failed)
+                    else if (IsFinished)
                     {
                         Update(animate: true);
                         ShowFinished(animate: true);
@@ -127,9 +138,9 @@ namespace Tamarillo.Ui
         private void ShowFinished(bool animate)
         {
             ArcSpin.BeginAnimation(RotateTransform.AngleProperty, null);
-            CancelButton.Visibility = Visibility.Collapsed;
+            CloseButton.ToolTip = "Fechar";
             bool done = Job.State == JobState.Done;
-            FrameworkElement disc = done ? (FrameworkElement)DoneButton : FailedButton;
+            FrameworkElement disc = done ? DoneDisc : FailedDisc;
             disc.Visibility = Visibility.Visible;
             Duration fast = Theme.Duration("Motion.Fast");
             Running.BeginAnimation(OpacityProperty, new DoubleAnimation(0, animate ? fast : new Duration(TimeSpan.Zero)));
@@ -146,7 +157,7 @@ namespace Tamarillo.Ui
                     var pop = new DoubleAnimation(0.4, 1, Theme.Duration("Motion.Check")) { EasingFunction = Theme.Ease("Ease.Pop") };
                     DoneScale.BeginAnimation(ScaleTransform.ScaleXProperty, pop);
                     DoneScale.BeginAnimation(ScaleTransform.ScaleYProperty, pop);
-                    DoneButton.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, fast));
+                    DoneDisc.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, fast));
                 }
             }
             else
@@ -155,12 +166,23 @@ namespace Tamarillo.Ui
                 DetailText.MaxHeight = 34;
                 DetailText.ToolTip = Job.Detail;
             }
-            _autoDismiss?.Start();
+            if (!IsMouseOver)
+            {
+                _autoDismiss?.Start();
+            }
         }
 
-        private void OnDismiss(object sender, RoutedEventArgs e) => Leave();
-
-        private void OnCancel(object sender, RoutedEventArgs e) => Job.Cancel();
+        private void OnClose(object sender, RoutedEventArgs e)
+        {
+            if (IsFinished)
+            {
+                Leave();
+            }
+            else
+            {
+                Job.Cancel();
+            }
+        }
 
         private void OnOpen(object sender, RoutedEventArgs e)
         {

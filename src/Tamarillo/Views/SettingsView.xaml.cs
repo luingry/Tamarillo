@@ -44,7 +44,6 @@ namespace Tamarillo.Views
             CustomPath.Text = string.IsNullOrEmpty(s.CustomFolder) ? "Nenhuma pasta escolhida" : s.CustomFolder;
             Quality.Value = s.JpegQuality;
             QualityValue.Text = s.JpegQuality.ToString();
-            AutoDismiss.IsChecked = s.AutoDismiss;
             FfmpegAuto.Visibility = string.IsNullOrEmpty(s.FfmpegPath) ? Visibility.Collapsed : Visibility.Visible;
             _ready = wasReady;
         }
@@ -225,14 +224,6 @@ namespace Tamarillo.Views
             if (_ready && value != _controller.Settings.Current.JpegQuality)
             {
                 _controller.Settings.Update(s => s.JpegQuality = value);
-            }
-        }
-
-        private void OnAutoDismiss(object sender, RoutedEventArgs e)
-        {
-            if (_ready)
-            {
-                _controller.Settings.Update(s => s.AutoDismiss = AutoDismiss.IsChecked == true);
             }
         }
 

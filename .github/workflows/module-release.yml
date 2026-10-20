@@ -24,9 +24,21 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.x'
+      # Tests run on their own and pass on their result line: on Windows Server runners the test process can
+      # fail fast (0xC000000D) while tearing down WinRT/Media Foundation after every test passed (ERRORS.md).
       - name: Build package
         shell: pwsh
-        run: ./scripts/build.ps1 -Configuration Release
+        run: ./scripts/build.ps1 -Configuration Release -SkipTests
+      - name: Test
+        shell: pwsh
+        run: |
+          $lines = @(& tests/Tamarillo.Tests/bin/Release/net48/Tamarillo.Tests.exe)
+          $code = $LASTEXITCODE
+          $lines | Write-Host
+          $summary = $lines -match '^\d+ passed, \d+ failed$' | Select-Object -Last 1
+          if ($summary -notmatch ' 0 failed$') { throw "Tests failed (exit code $code): $summary" }
+          if ($code -ne 0) { Write-Host "All tests passed; ignoring exit code $code from process teardown." }
+          exit 0
       - name: Publish release
         shell: pwsh
         env:

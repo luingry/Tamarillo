@@ -6,5 +6,15 @@
   "sdkVersion": 1,
   "activation": "startup",
   "settings": true,
-  "loadMode": "memory"
+  "loadMode": "memory",
+  "releaseNotes": [
+    {
+      "version": "0.1.0",
+      "notes": [
+        "First release: hold Ctrl + Alt + Shift while dragging files and pick the action from a wheel.",
+        "Converts images, audio, video, PDFs, documents, subtitles and data; resizes, compresses, rotates, recognizes text and zips.",
+        "Without dragging: select files in Explorer, hold the shortcut and release the keys over the action."
+      ]
+    }
+  ]
 }

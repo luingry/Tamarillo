@@ -71,13 +71,6 @@
             <TextBlock x:Name="QualityValue" Grid.Column="2" Style="{StaticResource Text.BodyStrong}" HorizontalAlignment="Right" VerticalAlignment="Center" />
         </Grid>
 
-        <CheckBox x:Name="AutoDismiss" Style="{StaticResource Switch}" Margin="0,18,0,0" Checked="OnAutoDismiss" Unchecked="OnAutoDismiss">
-            <StackPanel>
-                <TextBlock Text="Fechar o aviso de conclusão sozinho" Style="{StaticResource Text.BodyStrong}" />
-                <TextBlock Text="Desligado, o aviso fica até você clicar no ✓ verde." Style="{StaticResource Text.Caption}" Margin="0,2,0,0" />
-            </StackPanel>
-        </CheckBox>
-
         <!-- Optional engines -->
         <TextBlock Text="Motores opcionais" Style="{StaticResource Text.Overline}" Margin="0,28,0,0" />
         <Grid Margin="0,10,0,0">

@@ -18,7 +18,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- Status disc: progress ring → green check (dismiss) / alert (dismiss). -->
+            <!-- Status disc: progress ring → green check / alert. Display only; the corner X closes. -->
             <Grid Width="{StaticResource Overlay.Ring}" Height="{StaticResource Overlay.Ring}" VerticalAlignment="Center">
                 <Grid x:Name="Running">
                     <Ellipse Stroke="{StaticResource Brush.Surface4}" StrokeThickness="{StaticResource Overlay.RingStroke}" Margin="1.5" />
@@ -30,17 +30,17 @@
                     </Path>
                     <ui:IconView x:Name="ActionIcon" Width="16" Height="16" Foreground="{StaticResource Brush.Text.Secondary}" />
                 </Grid>
-                <Button x:Name="DoneButton" Style="{StaticResource Tama.RoundButton}" Background="{StaticResource Brush.Success}"
-                        ToolTip="Concluir" Visibility="Collapsed" Click="OnDismiss" RenderTransformOrigin="0.5,0.5">
-                    <Button.RenderTransform>
+                <Grid x:Name="DoneDisc" Visibility="Collapsed" RenderTransformOrigin="0.5,0.5">
+                    <Grid.RenderTransform>
                         <ScaleTransform x:Name="DoneScale" />
-                    </Button.RenderTransform>
+                    </Grid.RenderTransform>
+                    <Ellipse Fill="{StaticResource Brush.Success}" />
                     <ui:IconView Icon="Icon.Check" Width="20" Height="20" StrokeThickness="2.4" Foreground="{StaticResource Brush.Canvas}" />
-                </Button>
-                <Button x:Name="FailedButton" Style="{StaticResource Tama.RoundButton}" Background="{StaticResource Brush.Danger.Soft}"
-                        ToolTip="Fechar" Visibility="Collapsed" Click="OnDismiss">
+                </Grid>
+                <Grid x:Name="FailedDisc" Visibility="Collapsed">
+                    <Ellipse Fill="{StaticResource Brush.Danger.Soft}" />
                     <ui:IconView Icon="Icon.Alert" Width="20" Height="20" Foreground="{StaticResource Brush.Danger}" />
-                </Button>
+                </Grid>
             </Grid>
 
             <StackPanel Grid.Column="1" Margin="12,0,6,0" VerticalAlignment="Center">
@@ -52,9 +52,12 @@
                 </Button>
             </StackPanel>
 
-            <Button x:Name="CancelButton" Grid.Column="2" Style="{StaticResource Tama.RoundButton}" Width="28" Height="28"
-                    VerticalAlignment="Center" ToolTip="Cancelar" Click="OnCancel">
-                <ui:IconView Icon="Icon.Close" Width="14" Height="14" Foreground="{StaticResource Brush.Text.Tertiary}" />
+            <!-- Pulled into the card's top-right corner (past the card padding). -->
+            <Button x:Name="CloseButton" Grid.Column="2" Style="{StaticResource Tama.RoundButton}"
+                    Width="{StaticResource Overlay.Close}" Height="{StaticResource Overlay.Close}"
+                    VerticalAlignment="Top" Margin="0,-6,-6,0" ToolTip="Cancelar" Click="OnClose">
+                <ui:IconView Icon="Icon.Close" Width="{StaticResource Overlay.CloseIcon}" Height="{StaticResource Overlay.CloseIcon}"
+                             Foreground="{StaticResource Brush.Text.Tertiary}" />
             </Button>
         </Grid>
     </Border>

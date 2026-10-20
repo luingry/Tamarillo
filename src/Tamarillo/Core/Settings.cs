@@ -37,9 +37,6 @@ namespace Tamarillo.Core
 
         [DataMember] public string CustomFolder { get; set; }
 
-        /// <summary>Finished jobs leave the overlay by themselves after a few seconds.</summary>
-        [DataMember] public bool AutoDismiss { get; set; }
-
         [DataMember] public int JpegQuality { get; set; }
 
         /// <summary>Optional ffmpeg.exe override; empty means PATH and common install folders.</summary>
@@ -64,7 +61,6 @@ namespace Tamarillo.Core
             SelectionTrigger = true;
             Output = OutputLocation.SameFolder;
             CustomFolder = null;
-            AutoDismiss = false;
             JpegQuality = 90;
             FfmpegPath = null;
         }

@@ -45,7 +45,7 @@ namespace Tamarillo
             _settings = settings;
             _dispatcher = context.Dispatcher;
             _jobs = new JobRunner(_dispatcher, () => _settings.Current, () => _capabilities);
-            _jobs.JobStarted += job => Overlay.Add(job, _settings.Current.AutoDismiss ? TimeSpan.FromSeconds(6) : (TimeSpan?)null);
+            _jobs.JobStarted += job => Overlay.Add(job, Theme.Duration("Overlay.AutoDismiss").TimeSpan);
             _jobs.InstantFinished += job => Overlay.Add(job, TimeSpan.FromSeconds(job.State == JobState.Failed ? 5 : 1.8));
             _hook.ChordDown += () => _dispatcher.BeginInvoke(new Action(OnChordDown), DispatcherPriority.Input);
             _hook.ChordUp += () => _dispatcher.BeginInvoke(new Action(OnChordUp), DispatcherPriority.Input);

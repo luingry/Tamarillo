@@ -10,6 +10,11 @@
 - Cause: `IconView` froze its `Pen`; freezing a pen freezes its brush, which was the slot's animated brush.
 - Solution: freeze the pen only when its brush is already frozen.
 
+## 2026-10-19 — Sub-ring blinked when it appeared
+
+- Cause: the sub-ring items fade in with a staggered `BeginTime`. Before its `BeginTime` an animation does not apply its `From`, so each item rendered at its base opacity 1 for the delay, then jumped to 0 and faded back in.
+- Solution: `HideUntilAnimated` sets the base opacity/scale to the animation's start values before animating (ring and sub-ring). Any staggered entrance needs this.
+
 ## 2026-10-19 — `CS0176 ResizeMode.NoResize` / `CS0104 ResizeMode is ambiguous`
 
 - Cause: a module enum named `ResizeMode` shadowed `System.Windows.ResizeMode`.

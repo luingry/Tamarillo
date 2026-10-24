@@ -58,7 +58,9 @@ namespace Tamarillo.Operations
         protected override async Task TransformAsync(FileItem input, string output, OperationContext context, Action<double> progress)
         {
             Capabilities caps = context.Capabilities;
-            string ffmpegArgs = caps.HasFfmpeg ? FfmpegEngine.ArgumentsFor(_target, caps, _maxHeight, _profile) : null;
+            string ffmpegArgs = !caps.HasFfmpeg ? null
+                : input.Extension == "gif" && _target == "mp4" ? FfmpegEngine.AnimationToMp4(caps)
+                : FfmpegEngine.ArgumentsFor(_target, caps, _maxHeight, _profile);
             bool mf = MediaFoundationEngine.CanRead(input.Extension) && MediaFoundationEngine.CanWrite(_target);
             bool preferFfmpeg = ffmpegArgs != null && (input.Kind == FileKind.Video || !mf);
 

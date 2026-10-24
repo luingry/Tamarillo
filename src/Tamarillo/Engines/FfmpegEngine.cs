@@ -74,6 +74,13 @@ namespace Tamarillo.Engines
         }
 
         /// <summary>
+        /// Animated GIF → MP4: H.264 with yuv420p needs even dimensions, and a GIF has no audio to encode.
+        /// Transparent pixels come out black (yuv420p has no alpha).
+        /// </summary>
+        public static string AnimationToMp4(Capabilities caps) =>
+            "-vf \"scale=trunc(iw/2)*2:trunc(ih/2)*2\" " + H264(caps, VideoProfile.None, 0) + " -pix_fmt yuv420p -an -movflags +faststart";
+
+        /// <summary>
         /// H.264 settings for a compression profile. x264 uses the slow preset for both profiles (smaller files
         /// at the same quality); the bitrate-driven fallbacks size the stream by output height.
         /// </summary>

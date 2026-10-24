@@ -27,7 +27,7 @@ Sources: `src/Tamarillo/Theme/` — `Tokens.xaml` (merges the host tokens), `Ico
 
 | Component | Use |
 |---|---|
-| **Wheel** (`RadialWindow`) | Hub (thumbnail or kind icon + summary; while pointing, the full action sentence) · ring of ≤ 8 slots (icon + label, or a typographic badge for formats) · groups marked by a dot on the outer edge · sub-ring of ≤ 8 badges/icons · a sub-ring item may itself be a group (dot on its outer edge): hovering it opens a third ring of ≤ 8 badges around it |
+| **Wheel** (`RadialWindow`) | Hub (thumbnail or kind icon + summary; while pointing, the full action sentence) · ring of ≤ 8 slots (icon + label, or a typographic badge for formats) · groups marked by a dot on the outer edge · sub-ring of ≤ 8 badges, or icons with their label below · a sub-ring item may itself be a group (dot on its outer edge): hovering it opens a third ring of ≤ 8 badges around it |
 | **Job card** (`JobCard`, `Tama.Card`) | Status disc (progress ring around the action icon → green ✓ / red alert, display only) · title (action → output name, opens it) · detail (current file "2 de 5" → output folder, reveals it) · corner × (cancels while running, closes when finished) · finished cards leave after `Overlay.AutoDismiss` (10 s), paused while hovered |
 | `Tama.RoundButton` | 36 px round button with animated hover/press tints |
 | `Tama.Link` | Text that acts (opacity dip on hover, no underline) |

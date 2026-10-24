@@ -60,6 +60,8 @@ namespace Tamarillo.DevHost
 
             Snapshot(wheel, controller, FileSet.Virtual(@"C:\v\clip.mp4", @"C:\v\b.mov"), screen, desktop, Path.Combine(output, "wheel-4-video.png"), 1);
             CompressSnapshot(wheel, controller, screen, desktop, Path.Combine(output, "wheel-7-third-ring.png"));
+            SubRingSnapshot(wheel, controller, images, "rotate", screen, desktop, Path.Combine(output, "wheel-8-rotate.png"));
+            SubRingSnapshot(wheel, controller, images, "more", screen, desktop, Path.Combine(output, "wheel-9-more.png"));
             Snapshot(wheel, controller, FileSet.Virtual(@"C:\docs\", @"C:\x\notes.txt"), screen, desktop, Path.Combine(output, "wheel-5-mixed.png"), 3);
             Snapshot(wheel, controller, FileSet.Virtual(@"C:\d\relatorio.pdf"), screen, desktop, Path.Combine(output, "wheel-6-pdf.png"), -1);
 
@@ -135,6 +137,23 @@ namespace Tamarillo.DevHost
             Pump(TimeSpan.FromMilliseconds(200));
             double leafAngle = RadialGeometry.SubItemCenter(subAngle, 2, items[top].Children[0].Children.Count, Theme.Number("Radial.ThirdItemAngle"));
             wheel.SimulatePointer(wheel.Center + Polar((Theme.Number("Radial.ThirdInner") + Theme.Number("Radial.ThirdOuter")) / 2, leafAngle));
+            Pump(TimeSpan.FromMilliseconds(600));
+            Render(wheel.Stage, path, background);
+            wheel.Dismiss(animated: false);
+        }
+
+        /// <summary>Hovers group <paramref name="id"/> so its sub-ring (icons with labels) is open.</summary>
+        private static void SubRingSnapshot(RadialWindow wheel, TamarilloController controller, FileSet files, string id, NativeMethods.POINT at, Brush background, string path)
+        {
+            IReadOnlyList<MenuNode> items = MenuBuilder.Build(files, controller.Capabilities, controller);
+            int top = items.ToList().FindIndex(n => n.Id == id);
+            if (top < 0)
+            {
+                return;
+            }
+            wheel.ShowClick(files, items, at);
+            Pump(TimeSpan.FromMilliseconds(700));
+            wheel.SimulatePointer(wheel.Center + Polar(98, RadialGeometry.SlotCenter(top, items.Count)));
             Pump(TimeSpan.FromMilliseconds(600));
             Render(wheel.Stage, path, background);
             wheel.Dismiss(animated: false);

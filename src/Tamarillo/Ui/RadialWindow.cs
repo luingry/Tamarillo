@@ -49,17 +49,22 @@ namespace Tamarillo.Ui
     {
         private const double ArmDistance = 6;
 
-        private readonly double _hub, _inner, _outer, _subInner, _subOuter, _gap, _corner, _subItemAngleMax, _size;
-        private double _subItemAngle;
+        private const double PathOpacity = 0.35;
+
+        private readonly double _hub, _inner, _outer, _subInner, _subOuter, _thirdInner, _thirdOuter, _gap, _corner, _subItemAngleMax, _thirdItemAngleMax, _size;
+        private double _subItemAngle, _thirdItemAngle;
         private readonly Point _center;
         private readonly Grid _root = new Grid { IsHitTestVisible = false };
         private readonly ScaleTransform _rootScale = new ScaleTransform(1, 1);
         private readonly Canvas _ring = new Canvas();
         private readonly Canvas _sub = new Canvas();
+        private readonly Canvas _third = new Canvas();
         private readonly Path _highlight = new Path { Opacity = 0 };
         private readonly RotateTransform _highlightRotation = new RotateTransform();
         private readonly Path _subHighlight = new Path { Opacity = 0 };
         private readonly RotateTransform _subHighlightRotation = new RotateTransform();
+        private readonly Path _thirdHighlight = new Path { Opacity = 0 };
+        private readonly RotateTransform _thirdHighlightRotation = new RotateTransform();
         private readonly Image _thumbnail = new Image { Stretch = Stretch.UniformToFill, Opacity = 0 };
         private readonly IconView _hubIcon = new IconView { Width = 26, Height = 26 };
         private readonly TextBlock _hubTitle = new TextBlock();
@@ -68,6 +73,7 @@ namespace Tamarillo.Ui
         private readonly DispatcherTimer _armTimeout;
         private readonly List<Slot> _slots = new List<Slot>();
         private readonly List<Slot> _subSlots = new List<Slot>();
+        private readonly List<Slot> _thirdSlots = new List<Slot>();
 
         private IReadOnlyList<MenuNode> _items = Array.Empty<MenuNode>();
         private FileSet _files;
@@ -75,6 +81,8 @@ namespace Tamarillo.Ui
         private int _top = -1;
         private int _openGroup = -1;
         private int _subIndex = -1;
+        private int _openSub = -1;
+        private int _thirdIndex = -1;
         private Point? _origin;
         private bool _armed;
         private bool _hadMouse;
@@ -89,11 +97,15 @@ namespace Tamarillo.Ui
             _outer = Theme.Number("Radial.Outer");
             _subInner = Theme.Number("Radial.SubInner");
             _subOuter = Theme.Number("Radial.SubOuter");
+            _thirdInner = Theme.Number("Radial.ThirdInner");
+            _thirdOuter = Theme.Number("Radial.ThirdOuter");
             _gap = Theme.Number("Radial.Gap");
             _corner = Theme.Number("Radial.Corner");
             _subItemAngleMax = Theme.Number("Radial.SubItemAngle");
             _subItemAngle = _subItemAngleMax;
-            _size = 2 * (_subOuter + Theme.Number("Radial.Margin"));
+            _thirdItemAngleMax = Theme.Number("Radial.ThirdItemAngle");
+            _thirdItemAngle = _thirdItemAngleMax;
+            _size = 2 * (_thirdOuter + Theme.Number("Radial.Margin"));
             _center = new Point(_size / 2, _size / 2);
 
             WindowStyle = WindowStyle.None;
@@ -231,6 +243,8 @@ namespace Tamarillo.Ui
             _top = -1;
             _openGroup = -1;
             _subIndex = -1;
+            _openSub = -1;
+            _thirdIndex = -1;
             _origin = null;
             _armed = false;
             _hadMouse = false;
@@ -239,6 +253,8 @@ namespace Tamarillo.Ui
             _highlight.Opacity = 0;
             _subHighlight.BeginAnimation(OpacityProperty, null);
             _subHighlight.Opacity = 0;
+            _thirdHighlight.BeginAnimation(OpacityProperty, null);
+            _thirdHighlight.Opacity = 0;
             _rootScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
             _rootScale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
         }
@@ -279,19 +295,12 @@ namespace Tamarillo.Ui
 
             stage.Children.Add(_ring);
             stage.Children.Add(_sub);
+            stage.Children.Add(_third);
 
-            _highlight.Fill = Theme.Brush("Brush.Accent");
-            _highlight.RenderTransform = _highlightRotation;
-            _highlightRotation.CenterX = _center.X;
-            _highlightRotation.CenterY = _center.Y;
-            _ring.Children.Add(_highlight);
-
-            _subHighlight.Fill = Theme.Brush("Brush.Accent");
-            _subHighlight.RenderTransform = _subHighlightRotation;
-            _subHighlightRotation.CenterX = _center.X;
-            _subHighlightRotation.CenterY = _center.Y;
+            AddHighlight(_ring, _highlight, _highlightRotation);
+            AddHighlight(_sub, _subHighlight, _subHighlightRotation);
             _subHighlight.Data = RadialGeometry.Sector(_center, _subInner, _subOuter, -90 - _subItemAngle / 2, -90 + _subItemAngle / 2, _gap, _corner);
-            _sub.Children.Add(_subHighlight);
+            AddHighlight(_third, _thirdHighlight, _thirdHighlightRotation);
 
             // Hub
             var hub = new Grid { Width = 2 * _hub, Height = 2 * _hub };
@@ -318,6 +327,16 @@ namespace Tamarillo.Ui
             _root.RenderTransformOrigin = new Point(0.5, 0.5);
             _root.RenderTransform = _rootScale;
             _root.Children.Add(stage);
+        }
+
+        /// <summary>A ring's selection wedge: drawn pointing up, rotated round the centre onto the chosen item.</summary>
+        private void AddHighlight(Canvas ring, Path highlight, RotateTransform rotation)
+        {
+            highlight.Fill = Theme.Brush("Brush.Accent");
+            highlight.RenderTransform = rotation;
+            rotation.CenterX = _center.X;
+            rotation.CenterY = _center.Y;
+            ring.Children.Add(highlight);
         }
 
         private void Populate(FileSet files, IReadOnlyList<MenuNode> items)
@@ -562,6 +581,15 @@ namespace Tamarillo.Ui
             }
             if (_openGroup >= 0 && radius > _outer + _gap)
             {
+                if (_openSub >= 0 && radius > _subOuter + _gap)
+                {
+                    int leaf = RadialGeometry.SubItemAt(angle, _subSlots[_openSub].Angle, _thirdSlots.Count, _thirdItemAngle);
+                    if (leaf >= 0)
+                    {
+                        Select(_openGroup, _openSub, leaf);
+                        return;
+                    }
+                }
                 int child = RadialGeometry.SubItemAt(angle, _slots[_openGroup].Angle, _subSlots.Count, _subItemAngle);
                 if (child >= 0)
                 {
@@ -573,11 +601,13 @@ namespace Tamarillo.Ui
             Select(top, -1);
         }
 
-        private void Select(int top, int sub)
+        private void Select(int top, int sub, int third = -1)
         {
+            bool moved = false;
             if (top != _top)
             {
                 _top = top;
+                moved = true;
                 if (_openGroup >= 0 && _openGroup != top)
                 {
                     CloseGroup();
@@ -587,12 +617,31 @@ namespace Tamarillo.Ui
                 {
                     OpenGroup(top);
                 }
-                MoveHighlight(top);
             }
             if (sub != _subIndex)
             {
                 _subIndex = sub;
-                MoveSubHighlight(sub);
+                moved = true;
+                if (_openSub >= 0 && _openSub != sub)
+                {
+                    CloseSubGroup();
+                }
+                if (sub >= 0 && _subSlots[sub].Node.IsGroup)
+                {
+                    OpenSubGroup(sub);
+                }
+            }
+            if (third != _thirdIndex)
+            {
+                _thirdIndex = third;
+                moved = true;
+            }
+            if (moved)
+            {
+                // The deepest choice is lit; the rings it came through stay dimmed under it.
+                MoveHighlight(_highlight, _highlightRotation, _top >= 0 ? _slots[_top].Angle : (double?)null, _subIndex >= 0 ? PathOpacity : 1);
+                MoveHighlight(_subHighlight, _subHighlightRotation, _subIndex >= 0 ? _subSlots[_subIndex].Angle : (double?)null, _thirdIndex >= 0 ? PathOpacity : 1);
+                MoveHighlight(_thirdHighlight, _thirdHighlightRotation, _thirdIndex >= 0 ? _thirdSlots[_thirdIndex].Angle : (double?)null, 1);
             }
             for (int i = 0; i < _slots.Count; i++)
             {
@@ -600,46 +649,28 @@ namespace Tamarillo.Ui
             }
             for (int i = 0; i < _subSlots.Count; i++)
             {
-                SetSlotState(_subSlots[i], i == _subIndex, false);
+                SetSlotState(_subSlots[i], i == _subIndex && _thirdIndex < 0, i == _subIndex && _thirdIndex >= 0);
+            }
+            for (int i = 0; i < _thirdSlots.Count; i++)
+            {
+                SetSlotState(_thirdSlots[i], i == _thirdIndex, false);
             }
             UpdateHub();
         }
 
-        private void MoveHighlight(int index)
+        /// <summary>Glides a ring's wedge onto <paramref name="angle"/> (the short way round), or fades it out when null.</summary>
+        private static void MoveHighlight(Path highlight, RotateTransform rotation, double? angle, double opacity)
         {
-            Duration duration = Theme.Duration("Motion.Highlight");
-            IEasingFunction ease = Theme.Ease("Ease.Out");
-            if (index < 0)
+            if (angle == null)
             {
-                _highlight.BeginAnimation(OpacityProperty, new DoubleAnimation(0, Theme.Duration("Motion.Fast")));
+                highlight.BeginAnimation(OpacityProperty, new DoubleAnimation(0, Theme.Duration("Motion.Fast")));
                 return;
             }
-            double target = _slots[index].Angle + 90;
-            double current = _highlight.Opacity < 0.05 ? target : _highlightRotation.Angle;
-            // Rotate the short way round.
+            double target = angle.Value + 90;
+            double current = highlight.Opacity < 0.05 ? target : rotation.Angle;
             double delta = RadialGeometry.Normalize(target - current);
-            var rotate = new DoubleAnimation(current, current + delta, duration) { EasingFunction = ease };
-            _highlightRotation.BeginAnimation(RotateTransform.AngleProperty, rotate);
-            _highlight.BeginAnimation(OpacityProperty, new DoubleAnimation(_subIndex >= 0 ? 0.35 : 1, Theme.Duration("Motion.Fast")));
-        }
-
-        private void MoveSubHighlight(int index)
-        {
-            if (index < 0)
-            {
-                _subHighlight.BeginAnimation(OpacityProperty, new DoubleAnimation(0, Theme.Duration("Motion.Fast")));
-                if (_top >= 0)
-                {
-                    _highlight.BeginAnimation(OpacityProperty, new DoubleAnimation(1, Theme.Duration("Motion.Fast")));
-                }
-                return;
-            }
-            double target = _subSlots[index].Angle + 90;
-            double current = _subHighlight.Opacity < 0.05 ? target : _subHighlightRotation.Angle;
-            double delta = RadialGeometry.Normalize(target - current);
-            _subHighlightRotation.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(current, current + delta, Theme.Duration("Motion.Highlight")) { EasingFunction = Theme.Ease("Ease.Out") });
-            _subHighlight.BeginAnimation(OpacityProperty, new DoubleAnimation(1, Theme.Duration("Motion.Fast")));
-            _highlight.BeginAnimation(OpacityProperty, new DoubleAnimation(0.35, Theme.Duration("Motion.Fast")));
+            rotation.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(current, current + delta, Theme.Duration("Motion.Highlight")) { EasingFunction = Theme.Ease("Ease.Out") });
+            highlight.BeginAnimation(OpacityProperty, new DoubleAnimation(opacity, Theme.Duration("Motion.Fast")));
         }
 
         private static void SetSlotState(Slot slot, bool active, bool onPath)
@@ -667,20 +698,41 @@ namespace Tamarillo.Ui
             }
             ClearSub();
             _openGroup = index;
-            Slot group = _slots[index];
             IReadOnlyList<MenuNode> children = _items[index].Children;
             // Long lists tighten so the sub-ring never wraps past ~210 degrees.
             _subItemAngle = Math.Min(_subItemAngleMax, 210.0 / Math.Max(1, children.Count));
-            _subHighlight.Data = RadialGeometry.Sector(_center, _subInner, _subOuter, -90 - _subItemAngle / 2, -90 + _subItemAngle / 2, _gap, _corner);
+            Unfold(_sub, _subHighlight, _subSlots, children, _slots[index].Angle, _subItemAngle, _subInner, _subOuter);
+            UpdateHub();
+        }
+
+        /// <summary>Opens the third ring of sub-ring item <paramref name="index"/>, centred on it.</summary>
+        private void OpenSubGroup(int index)
+        {
+            if (index < 0 || index >= _subSlots.Count || !_subSlots[index].Node.IsGroup || _openSub == index)
+            {
+                return;
+            }
+            ClearThird();
+            _openSub = index;
+            IReadOnlyList<MenuNode> children = _subSlots[index].Node.Children;
+            _thirdItemAngle = Math.Min(_thirdItemAngleMax, 210.0 / Math.Max(1, children.Count));
+            Unfold(_third, _thirdHighlight, _thirdSlots, children, _subSlots[index].Angle, _thirdItemAngle, _thirdInner, _thirdOuter);
+            UpdateHub();
+        }
+
+        /// <summary>Lays <paramref name="children"/> out on a ring around <paramref name="around"/>, unfolding from the parent outward.</summary>
+        private void Unfold(Canvas ring, Path highlight, List<Slot> slots, IReadOnlyList<MenuNode> children, double around, double itemAngle, double inner, double outer)
+        {
+            highlight.Data = RadialGeometry.Sector(_center, inner, outer, -90 - itemAngle / 2, -90 + itemAngle / 2, _gap, _corner);
             IEasingFunction ease = Theme.Ease("Ease.Emphasized");
             TimeSpan stagger = Theme.Milliseconds("Motion.Wheel.Stagger");
             for (int i = 0; i < children.Count; i++)
             {
-                double angle = RadialGeometry.SubItemCenter(group.Angle, i, children.Count, _subItemAngle);
-                Slot slot = CreateSlot(children[i], angle, _subItemAngle, _subInner, _subOuter, Theme.Number("Radial.SubIconSize"), showLabel: false);
-                _sub.Children.Insert(_sub.Children.IndexOf(_subHighlight), slot.Background);
-                _sub.Children.Add(slot.Layer);
-                _subSlots.Add(slot);
+                double angle = RadialGeometry.SubItemCenter(around, i, children.Count, itemAngle);
+                Slot slot = CreateSlot(children[i], angle, itemAngle, inner, outer, Theme.Number("Radial.SubIconSize"), showLabel: false);
+                ring.Children.Insert(ring.Children.IndexOf(highlight), slot.Background);
+                ring.Children.Add(slot.Layer);
+                slots.Add(slot);
 
                 // Items unfold from the group outward, nearest first.
                 double distance = Math.Abs(i - (children.Count - 1) / 2.0);
@@ -693,7 +745,6 @@ namespace Tamarillo.Ui
                 slot.Scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
                 slot.Scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
             }
-            UpdateHub();
         }
 
         private void CloseGroup()
@@ -705,14 +756,31 @@ namespace Tamarillo.Ui
             _subHighlight.Opacity = 0;
         }
 
+        private void CloseSubGroup()
+        {
+            _openSub = -1;
+            _thirdIndex = -1;
+            ClearThird();
+            _thirdHighlight.BeginAnimation(OpacityProperty, null);
+            _thirdHighlight.Opacity = 0;
+        }
+
         private void ClearSub()
         {
-            foreach (Slot slot in _subSlots)
+            CloseSubGroup();
+            Clear(_sub, _subSlots);
+        }
+
+        private void ClearThird() => Clear(_third, _thirdSlots);
+
+        private static void Clear(Canvas ring, List<Slot> slots)
+        {
+            foreach (Slot slot in slots)
             {
-                _sub.Children.Remove(slot.Background);
-                _sub.Children.Remove(slot.Layer);
+                ring.Children.Remove(slot.Background);
+                ring.Children.Remove(slot.Layer);
             }
-            _subSlots.Clear();
+            slots.Clear();
         }
 
         // ═══ Hub ═══
@@ -754,7 +822,8 @@ namespace Tamarillo.Ui
         }
 
         private MenuNode CurrentNode =>
-            _subIndex >= 0 && _subIndex < _subSlots.Count ? _subSlots[_subIndex].Node
+            _thirdIndex >= 0 && _thirdIndex < _thirdSlots.Count ? _thirdSlots[_thirdIndex].Node
+            : _subIndex >= 0 && _subIndex < _subSlots.Count ? _subSlots[_subIndex].Node
             : _top >= 0 && _top < _slots.Count ? _slots[_top].Node
             : null;
 
@@ -770,11 +839,18 @@ namespace Tamarillo.Ui
             if (node.IsGroup)
             {
                 // Chose a group: open it and wait for a click.
-                OpenGroup(_top);
+                if (_subIndex >= 0)
+                {
+                    OpenSubGroup(_subIndex);
+                }
+                else
+                {
+                    OpenGroup(_top);
+                }
                 SetMode(WheelMode.Click);
                 return true;
             }
-            Slot chosen = _subIndex >= 0 ? _subSlots[_subIndex] : _slots[_top];
+            Slot chosen = _thirdIndex >= 0 ? _thirdSlots[_thirdIndex] : _subIndex >= 0 ? _subSlots[_subIndex] : _slots[_top];
             Diagnostics.Log?.Info("Chosen: " + node.Id);
             FileSet files = _files;
             Close(animated: true, chosen);
@@ -805,7 +881,11 @@ namespace Tamarillo.Ui
             switch (key)
             {
                 case NavigationKey.Escape:
-                    if (_openGroup >= 0 && _subIndex >= 0)
+                    if (_openSub >= 0 && _thirdIndex >= 0)
+                    {
+                        Select(_openGroup, _subIndex, -1);
+                    }
+                    else if (_openGroup >= 0 && _subIndex >= 0)
                     {
                         Select(_openGroup, -1);
                     }
@@ -821,6 +901,12 @@ namespace Tamarillo.Ui
                         Select(_top, 0);
                         SetMode(WheelMode.Click);
                     }
+                    else if (_subIndex >= 0 && _subSlots[_subIndex].Node.IsGroup && _thirdIndex < 0)
+                    {
+                        OpenSubGroup(_subIndex);
+                        Select(_top, _subIndex, 0);
+                        SetMode(WheelMode.Click);
+                    }
                     else
                     {
                         TryCommit();
@@ -828,7 +914,11 @@ namespace Tamarillo.Ui
                     break;
                 default:
                     int direction = key == NavigationKey.Left || key == NavigationKey.Up ? -1 : 1;
-                    if (_openGroup >= 0 && _subIndex >= 0)
+                    if (_openSub >= 0 && _thirdIndex >= 0)
+                    {
+                        Select(_openGroup, _openSub, (_thirdIndex + direction + _thirdSlots.Count) % _thirdSlots.Count);
+                    }
+                    else if (_openGroup >= 0 && _subIndex >= 0)
                     {
                         Select(_openGroup, (_subIndex + direction + _subSlots.Count) % _subSlots.Count);
                     }

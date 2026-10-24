@@ -151,6 +151,19 @@ namespace Tamarillo.Tests
             Assert(folders.Any(n => n.Id == "zip") && folders.All(n => !n.IsGroup), "folders get file actions directly");
             IReadOnlyList<MenuNode> video = MenuBuilder.Build(FileSet.Virtual(@"C:\v\a.mov"), Capabilities.Baseline, host);
             Assert(video.First(n => n.Id == "convert").Children.Any(c => c.Id == "to-mp4"), "MP4 without ffmpeg");
+            MenuNode compress = video.First(n => n.Id == "compress");
+            Assert(compress.Children.Select(c => c.Id).SequenceEqual(new[] { "quality", "efficiency" }), "two compression profiles");
+            foreach (MenuNode profile in compress.Children)
+            {
+                Assert(profile.Children.Select(c => c.Id).SequenceEqual(new[] { "original", "res-1080", "res-720", "res-480" }), "resolutions under " + profile.Id);
+                var original = (MediaConvertOperation)profile.Children[0].Operation;
+                Assert(original.MaxHeight == 0 && original.Profile == (profile.Id == "quality" ? VideoProfile.Quality : VideoProfile.Efficiency), "original keeps the resolution");
+            }
+            IReadOnlyList<MenuNode> noOriginal = MenuBuilder.Build(FileSet.Virtual(@"C:\v\a.mov"), Capabilities.Baseline, host, new[] { "video/compress/efficiency", "video/compress/quality/original" });
+            MenuNode trimmedCompress = noOriginal.First(n => n.Id == "compress");
+            Assert(trimmedCompress.Children.Count == 1 && trimmedCompress.Children[0].Children.All(c => c.Id != "original"), "hidden third-level entries");
+            Assert(MediaFoundationEngine.Bitrate(VideoProfile.Efficiency, 1080) < MediaFoundationEngine.Bitrate(VideoProfile.Quality, 1080)
+                   && MediaFoundationEngine.Bitrate(VideoProfile.Quality, 480) < MediaFoundationEngine.Bitrate(VideoProfile.Quality, 1080), "profile bitrates");
             IReadOnlyList<MenuNode> json = MenuBuilder.Build(FileSet.Virtual(@"C:\d\a.json"), _caps, host);
             Assert(json.Any(n => n.Id == "json-format") && json.Any(n => n.Id == "json-minify"), "JSON tools");
             Assert(MenuBuilder.Build(FileSet.Virtual(), _caps, host).Count == 0, "empty set");

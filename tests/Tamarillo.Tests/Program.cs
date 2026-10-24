@@ -164,6 +164,10 @@ namespace Tamarillo.Tests
             Assert(trimmedCompress.Children.Count == 1 && trimmedCompress.Children[0].Children.All(c => c.Id != "original"), "hidden third-level entries");
             Assert(MediaFoundationEngine.Bitrate(VideoProfile.Efficiency, 1080) < MediaFoundationEngine.Bitrate(VideoProfile.Quality, 1080)
                    && MediaFoundationEngine.Bitrate(VideoProfile.Quality, 480) < MediaFoundationEngine.Bitrate(VideoProfile.Quality, 1080), "profile bitrates");
+            FileSet gif = FileSet.Virtual(@"C:\a\anim.gif");
+            Assert(MenuBuilder.Build(gif, Capabilities.Everything, host).First(n => n.Id == "convert").Children.Any(c => c.Id == "to-mp4"), "GIF → MP4 with ffmpeg");
+            Assert(MenuBuilder.Build(gif, Capabilities.Baseline, host).First(n => n.Id == "convert").Children.All(c => c.Id != "to-mp4"), "no GIF → MP4 without ffmpeg");
+            Assert(images[0].Children.All(c => c.Id != "to-mp4"), "MP4 only for GIFs");
             IReadOnlyList<MenuNode> json = MenuBuilder.Build(FileSet.Virtual(@"C:\d\a.json"), _caps, host);
             Assert(json.Any(n => n.Id == "json-format") && json.Any(n => n.Id == "json-minify"), "JSON tools");
             Assert(MenuBuilder.Build(FileSet.Virtual(), _caps, host).Count == 0, "empty set");
@@ -184,6 +188,7 @@ namespace Tamarillo.Tests
             List<string> formats = image.Entries.First(e => e.Key == "image/convert").Children.Select(c => c.Key).ToList();
             Assert(formats.Contains("image/convert/to-jpg") && formats.Contains("image/convert/to-png") && formats.Contains("image/convert/to-avif"), "every image format");
             Assert(formats.IndexOf("image/convert/to-jpg") == 0, "merged variants keep their order");
+            Assert(formats.Contains("image/convert/to-mp4") && formats.Contains("image/convert/to-gif"), "GIF variant in the catalog");
             Assert(image.Entries.Any(e => e.Key == "image/more" && e.Children.Count == 0), "Mais is one switch per kind");
             List<string> files = catalog.First(s => s.Key == MenuBuilder.FilesSection).Entries.Select(e => e.Key).ToList();
             Assert(files.Contains("files/float") && files.Contains("files/targz") && files.Contains("files/hash"), "every file action");
@@ -361,6 +366,28 @@ namespace Tamarillo.Tests
             var progress = new List<double>();
             string ogg = RunSingle(new MediaConvertOperation("ogg", "OGG"), wav, _caps);
             Assert(Encoding.ASCII.GetString(File.ReadAllBytes(ogg), 0, 4) == "OggS", "OGG container");
+
+            // Odd dimensions: H.264 in yuv420p refuses them unless the filter evens them out.
+            string gif = Path.Combine(Folder("ffmpeg-gif"), "anim.gif");
+            var encoder = new GifBitmapEncoder();
+            foreach (Color color in new[] { Colors.Red, Colors.Blue, Colors.Green })
+            {
+                var pixels = new byte[33 * 21 * 4];
+                for (int i = 0; i < pixels.Length; i += 4)
+                {
+                    pixels[i] = color.B;
+                    pixels[i + 1] = color.G;
+                    pixels[i + 2] = color.R;
+                    pixels[i + 3] = 255;
+                }
+                encoder.Frames.Add(BitmapFrame.Create(BitmapSource.Create(33, 21, 96, 96, PixelFormats.Bgra32, null, pixels, 33 * 4)));
+            }
+            using (FileStream stream = File.Create(gif))
+            {
+                encoder.Save(stream);
+            }
+            string mp4 = RunSingle(new MediaConvertOperation("mp4", "MP4"), gif, _caps);
+            Assert(Encoding.ASCII.GetString(File.ReadAllBytes(mp4), 4, 4) == "ftyp", "GIF → MP4 container");
         }
 
         private static void Hash()

@@ -183,7 +183,7 @@ namespace Tamarillo.Operations
         {
             var sections = new List<MenuSection>
             {
-                Section(host, "Imagens", @"a.jpg", @"a.png"),
+                Section(host, "Imagens", @"a.jpg", @"a.png", @"a.gif"),
                 Section(host, "Vídeos", @"a.mp4", @"a.mov"),
                 Section(host, "Áudios", @"a.mp3", @"a.wav"),
                 Section(host, "PDFs", @"a.pdf"),
@@ -297,6 +297,12 @@ namespace Tamarillo.Operations
                     continue; // offered as "PDF" (merge) at the first level
                 }
                 formats.Add(Format(ext, op));
+            }
+            if (files.AllExtensions("gif") && MediaConvertOperation.CanProduce("mp4", files, caps))
+            {
+                // Animated GIFs play better (and weigh far less) as video; ffmpeg reads them, MF does not.
+                // Near the front so the sub-ring cap never drops it; after JPG so the settings catalog keeps its order.
+                formats.Insert(Math.Min(1, formats.Count), Format("mp4", new MediaConvertOperation("mp4", "Convertendo para MP4")));
             }
             items.Add(Group("convert", "Converter", "Converter imagem", "Icon.Convert", formats));
             items.Add(Group("resize", "Tamanho", "Redimensionar", "Icon.Resize", new[]

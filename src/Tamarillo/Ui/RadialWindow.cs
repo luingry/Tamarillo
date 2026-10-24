@@ -404,8 +404,9 @@ namespace Tamarillo.Ui
                     Text = node.Label,
                     Style = (Style)Resources["Tama.Text.Label"],
                     Foreground = slot.Secondary,
-                    Margin = new Thickness(0, 4, 0, 0),
-                    MaxWidth = 74,
+                    Margin = new Thickness(0, iconSize < Theme.Number("Radial.IconSize") ? 2 : 4, 0, 0),
+                    // Never wider than the segment's chord at mid-radius, so narrow sub-ring items trim instead of spilling.
+                    MaxWidth = Math.Min(74, 2 * mid * Math.Sin(span / 2 * Math.PI / 180) - 2 * _gap - 6),
                     TextTrimming = TextTrimming.CharacterEllipsis,
                 });
             }
@@ -416,8 +417,9 @@ namespace Tamarillo.Ui
 
             if (node.IsGroup)
             {
-                // A small notch on the outer edge says "there is more here".
-                Point dot = RadialGeometry.Polar(_center, outer - 7, angle);
+                // A small notch on the outer edge says "there is more here", kept in the margin outside the content.
+                double margin = (outer - inner - stack.DesiredSize.Height) / 2;
+                Point dot = RadialGeometry.Polar(_center, outer - Math.Min(7, margin / 2), angle);
                 var notch = new Ellipse { Width = 4, Height = 4, Fill = slot.Secondary };
                 Canvas.SetLeft(notch, dot.X - 2);
                 Canvas.SetTop(notch, dot.Y - 2);
@@ -729,7 +731,7 @@ namespace Tamarillo.Ui
             for (int i = 0; i < children.Count; i++)
             {
                 double angle = RadialGeometry.SubItemCenter(around, i, children.Count, itemAngle);
-                Slot slot = CreateSlot(children[i], angle, itemAngle, inner, outer, Theme.Number("Radial.SubIconSize"), showLabel: false);
+                Slot slot = CreateSlot(children[i], angle, itemAngle, inner, outer, Theme.Number("Radial.SubIconSize"), showLabel: true);
                 ring.Children.Insert(ring.Children.IndexOf(highlight), slot.Background);
                 ring.Children.Add(slot.Layer);
                 slots.Add(slot);

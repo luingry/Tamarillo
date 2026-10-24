@@ -9,6 +9,18 @@ using Tamarillo.Engines;
 
 namespace Tamarillo.Operations
 {
+    /// <summary>How a video is compressed; <see cref="None"/> is a plain conversion.</summary>
+    public enum VideoProfile
+    {
+        None,
+
+        /// <summary>Visually close to the source, at the smallest size that keeps it so.</summary>
+        Quality,
+
+        /// <summary>The smallest file, trading some visible quality.</summary>
+        Efficiency,
+    }
+
     /// <summary>
     /// Audio/video. Video prefers ffmpeg when present (it honours phone rotation and reads more codecs);
     /// otherwise, and for audio, Windows' Media Foundation, with ffmpeg as the fallback if MF refuses.
@@ -19,14 +31,20 @@ namespace Tamarillo.Operations
         private readonly int _maxHeight;
         private readonly string _title;
         private readonly string _suffix;
+        private readonly VideoProfile _profile;
 
-        public MediaConvertOperation(string target, string title, int maxHeight = 0, string suffix = "")
+        public MediaConvertOperation(string target, string title, int maxHeight = 0, string suffix = "", VideoProfile profile = VideoProfile.None)
         {
             _target = target;
             _title = title;
             _maxHeight = maxHeight;
             _suffix = suffix;
+            _profile = profile;
         }
+
+        internal VideoProfile Profile => _profile;
+
+        internal int MaxHeight => _maxHeight;
 
         public override string Title => _title;
 
@@ -40,7 +58,7 @@ namespace Tamarillo.Operations
         protected override async Task TransformAsync(FileItem input, string output, OperationContext context, Action<double> progress)
         {
             Capabilities caps = context.Capabilities;
-            string ffmpegArgs = caps.HasFfmpeg ? FfmpegEngine.ArgumentsFor(_target, caps, _maxHeight) : null;
+            string ffmpegArgs = caps.HasFfmpeg ? FfmpegEngine.ArgumentsFor(_target, caps, _maxHeight, _profile) : null;
             bool mf = MediaFoundationEngine.CanRead(input.Extension) && MediaFoundationEngine.CanWrite(_target);
             bool preferFfmpeg = ffmpegArgs != null && (input.Kind == FileKind.Video || !mf);
 
@@ -51,7 +69,7 @@ namespace Tamarillo.Operations
             }
             try
             {
-                await MediaFoundationEngine.TranscodeAsync(input.Path, output, _target, _maxHeight, progress, context.Token).ConfigureAwait(false);
+                await MediaFoundationEngine.TranscodeAsync(input.Path, output, _target, _maxHeight, _profile, progress, context.Token).ConfigureAwait(false);
             }
             catch (Exception ex) when (!(ex is OperationCanceledException) && ffmpegArgs != null)
             {

@@ -1,6 +1,6 @@
 {
   "id": "tamarillo",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "entryAssembly": "Tamarillo.Module.dll",
   "entryType": "Tamarillo.TamarilloModule",
   "sdkVersion": 1,
@@ -8,6 +8,13 @@
   "settings": true,
   "loadMode": "memory",
   "releaseNotes": [
+    {
+      "version": "0.3.0",
+      "notes": [
+        "Video compression offers two profiles: Quality (keeps the picture, smallest size that does) and Efficiency (smallest file, some quality traded).",
+        "Each profile opens a third ring with the resolution: Original (keeps the source resolution), 1080p, 720p or 480p."
+      ]
+    },
     {
       "version": "0.2.0",
       "notes": [

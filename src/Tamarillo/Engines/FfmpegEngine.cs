@@ -20,15 +20,16 @@ namespace Tamarillo.Engines
         private static readonly Regex DurationPattern = new Regex(@"Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)", RegexOptions.Compiled);
 
         /// <summary>Encoding arguments for a target, or null if this ffmpeg build cannot produce it.</summary>
-        public static string ArgumentsFor(string ext, Capabilities caps, int maxHeight = 0)
+        public static string ArgumentsFor(string ext, Capabilities caps, int maxHeight = 0, VideoProfile profile = VideoProfile.None)
         {
-            string h264 = caps.FfmpegHas("libx264") ? "-c:v libx264 -preset medium -crf 23" : caps.FfmpegHas("h264_mf") ? "-c:v h264_mf -b:v 5M" : "-c:v mpeg4 -q:v 3";
+            string h264 = H264(caps, VideoProfile.None, 0);
             string aac = "-c:a aac -b:a 160k";
             string scale = maxHeight > 0 ? $"-vf \"scale=-2:'min({maxHeight},ih)'\" " : string.Empty;
             switch (ext)
             {
                 case "mp4":
-                    return scale + h264.Replace("-crf 23", maxHeight > 0 ? "-crf 26" : "-crf 23") + " -pix_fmt yuv420p " + aac + " -movflags +faststart";
+                    string audio = profile == VideoProfile.Efficiency ? "-c:a aac -b:a 96k" : aac;
+                    return scale + H264(caps, profile, maxHeight) + " -pix_fmt yuv420p " + audio + " -movflags +faststart";
                 case "mov":
                     return h264 + " -pix_fmt yuv420p " + aac;
                 case "mkv":
@@ -70,6 +71,28 @@ namespace Tamarillo.Engines
                 default:
                     return null;
             }
+        }
+
+        /// <summary>
+        /// H.264 settings for a compression profile. x264 uses the slow preset for both profiles (smaller files
+        /// at the same quality); the bitrate-driven fallbacks size the stream by output height.
+        /// </summary>
+        private static string H264(Capabilities caps, VideoProfile profile, int maxHeight)
+        {
+            if (caps.FfmpegHas("libx264"))
+            {
+                switch (profile)
+                {
+                    case VideoProfile.Quality: return "-c:v libx264 -preset slow -crf 21";
+                    case VideoProfile.Efficiency: return "-c:v libx264 -preset slow -crf 28";
+                    default: return "-c:v libx264 -preset medium -crf 23";
+                }
+            }
+            if (caps.FfmpegHas("h264_mf"))
+            {
+                return "-c:v h264_mf -b:v " + (profile == VideoProfile.None ? "5M" : (MediaFoundationEngine.Bitrate(profile, maxHeight) / 1000) + "k");
+            }
+            return profile == VideoProfile.Efficiency ? "-c:v mpeg4 -q:v 6" : "-c:v mpeg4 -q:v 3";
         }
 
         public static async Task RunAsync(string ffmpeg, string input, string output, string arguments, Action<double> progress, CancellationToken token)

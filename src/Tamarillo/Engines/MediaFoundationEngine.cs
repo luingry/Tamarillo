@@ -26,13 +26,31 @@ namespace Tamarillo.Engines
             ext == "mp4" || ext == "wmv" || ext == "mp3" || ext == "m4a" || ext == "wav" || ext == "wma" || ext == "flac";
 
         /// <summary>
-        /// Transcodes <paramref name="input"/> to <paramref name="output"/>. <paramref name="maxHeight"/> &gt; 0
-        /// shrinks video to that height (aspect kept, never upscaled) at a matching bitrate.
+        /// Video bitrate (bits/s) of a compression profile for a <paramref name="width"/> × <paramref name="height"/>
+        /// output, assuming ~30 fps: about 8 Mbit/s (quality) or 3.4 Mbit/s (efficiency) at 1080p.
         /// </summary>
-        public static async Task TranscodeAsync(string input, string output, string targetExt, int maxHeight, Action<double> progress, CancellationToken token)
+        public static uint Bitrate(VideoProfile profile, uint width, uint height)
+        {
+            double bitsPerPixel = profile == VideoProfile.Efficiency ? 0.055 : 0.13;
+            return (uint)Math.Max(400_000, width * (double)height * 30 * bitsPerPixel);
+        }
+
+        /// <summary>Same, for a 16:9 output of <paramref name="height"/> lines (0 = 1080).</summary>
+        public static uint Bitrate(VideoProfile profile, int height)
+        {
+            uint h = height > 0 ? (uint)height : 1080u;
+            return Bitrate(profile, h * 16 / 9, h);
+        }
+
+        /// <summary>
+        /// Transcodes <paramref name="input"/> to <paramref name="output"/>. A compression <paramref name="videoProfile"/>
+        /// sizes the bitrate to the output; <paramref name="maxHeight"/> &gt; 0 also shrinks video to that height
+        /// (aspect kept, never upscaled).
+        /// </summary>
+        public static async Task TranscodeAsync(string input, string output, string targetExt, int maxHeight, VideoProfile videoProfile, Action<double> progress, CancellationToken token)
         {
             StorageFile source = await StorageFile.GetFileFromPathAsync(input).AsTask(token).ConfigureAwait(false);
-            MediaEncodingProfile profile = await ProfileForAsync(source, targetExt, maxHeight).ConfigureAwait(false);
+            MediaEncodingProfile profile = await ProfileForAsync(source, targetExt, maxHeight, videoProfile).ConfigureAwait(false);
 
             StorageFolder folder = await StorageFolder.GetFolderFromPathAsync(Path.GetDirectoryName(output)).AsTask(token).ConfigureAwait(false);
             StorageFile destination = await folder.CreateFileAsync(Path.GetFileName(output), CreationCollisionOption.ReplaceExisting).AsTask(token).ConfigureAwait(false);
@@ -47,7 +65,7 @@ namespace Tamarillo.Engines
             await prepared.TranscodeAsync().AsTask(token, report).ConfigureAwait(false);
         }
 
-        private static async Task<MediaEncodingProfile> ProfileForAsync(StorageFile source, string ext, int maxHeight)
+        private static async Task<MediaEncodingProfile> ProfileForAsync(StorageFile source, string ext, int maxHeight, VideoProfile videoProfile)
         {
             switch (ext)
             {
@@ -59,7 +77,7 @@ namespace Tamarillo.Engines
                 case "wmv": return MediaEncodingProfile.CreateWmv(VideoEncodingQuality.Auto);
                 case "mp4":
                     MediaEncodingProfile profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
-                    if (maxHeight > 0)
+                    if (videoProfile != VideoProfile.None)
                     {
                         VideoProperties video = await source.Properties.GetVideoPropertiesAsync().AsTask().ConfigureAwait(false);
                         uint width = video.Width, height = video.Height;
@@ -67,16 +85,21 @@ namespace Tamarillo.Engines
                         {
                             (width, height) = (height, width);
                         }
-                        if (height > 0 && height > maxHeight)
+                        if (maxHeight > 0 && height > maxHeight)
                         {
-                            uint newHeight = (uint)maxHeight & ~1u;
-                            uint newWidth = (uint)Math.Round(width * (double)maxHeight / height) & ~1u;
-                            profile = MediaEncodingProfile.CreateMp4(VideoEncodingQuality.Auto);
-                            profile.Video.Width = newWidth;
-                            profile.Video.Height = newHeight;
+                            width = (uint)Math.Round(width * (double)maxHeight / height) & ~1u;
+                            height = (uint)maxHeight & ~1u;
+                            profile.Video.Width = width;
+                            profile.Video.Height = height;
                         }
-                        profile.Video.Bitrate = maxHeight >= 1080 ? 6_000_000u : maxHeight >= 720 ? 3_000_000u : 1_200_000u;
-                        profile.Audio = AudioEncodingProperties.CreateAac(44100, 2, 128_000);
+                        uint bitrate = width > 0 && height > 0 ? Bitrate(videoProfile, width, height) : Bitrate(videoProfile, maxHeight);
+                        // Compressing never raises the bitrate of a file that is already lean.
+                        if (video.Bitrate > 0)
+                        {
+                            bitrate = Math.Min(bitrate, video.Bitrate);
+                        }
+                        profile.Video.Bitrate = bitrate;
+                        profile.Audio = AudioEncodingProperties.CreateAac(44100, 2, videoProfile == VideoProfile.Efficiency ? 96_000u : 160_000u);
                     }
                     return profile;
                 default:

@@ -28,17 +28,20 @@
     <SolidColorBrush x:Key="Brush.Tama.Brand" Color="{StaticResource Color.Tama.Brand}" po:Freeze="True" />
 
     <!-- ═══ Radial geometry (DIPs) ═══ -->
-    <!-- hub | gap | ring (first level) | gap | sub-ring (second level). -->
+    <!-- hub | gap | ring (first level) | gap | sub-ring (second level) | gap | third ring. -->
     <sys:Double x:Key="Radial.Hub">50</sys:Double>
     <sys:Double x:Key="Radial.Inner">58</sys:Double>
     <sys:Double x:Key="Radial.Outer">138</sys:Double>
     <sys:Double x:Key="Radial.SubInner">146</sys:Double>
     <sys:Double x:Key="Radial.SubOuter">198</sys:Double>
+    <sys:Double x:Key="Radial.ThirdInner">206</sys:Double>
+    <sys:Double x:Key="Radial.ThirdOuter">256</sys:Double>
     <!-- Gap between neighbouring segments, measured as an arc length, and the corner rounding. -->
     <sys:Double x:Key="Radial.Gap">4</sys:Double>
     <sys:Double x:Key="Radial.Corner">9</sys:Double>
-    <!-- Angular size of one sub-ring item, and the window margin around the sub-ring. -->
+    <!-- Angular size of one sub-ring / third-ring item, and the window margin around the outermost ring. -->
     <sys:Double x:Key="Radial.SubItemAngle">30</sys:Double>
+    <sys:Double x:Key="Radial.ThirdItemAngle">24</sys:Double>
     <sys:Double x:Key="Radial.Margin">28</sys:Double>
     <sys:Double x:Key="Radial.IconSize">22</sys:Double>
     <sys:Double x:Key="Radial.SubIconSize">18</sys:Double>

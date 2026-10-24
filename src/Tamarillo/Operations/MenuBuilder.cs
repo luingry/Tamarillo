@@ -354,10 +354,26 @@ namespace Tamarillo.Operations
             {
                 items.Add(Group("compress", "Comprimir", "Comprimir vídeo (MP4)", "Icon.Compress", new[]
                 {
-                    Action("compress-1080", "1080p", "Comprimir para 1080p", "Icon.Compress", new MediaConvertOperation("mp4", "Comprimindo para 1080p", 1080, " (1080p)"), "1080p"),
-                    Action("compress-720", "720p", "Comprimir para 720p", "Icon.Compress", new MediaConvertOperation("mp4", "Comprimindo para 720p", 720, " (720p)"), "720p"),
-                    Action("compress-480", "480p", "Comprimir para 480p", "Icon.Compress", new MediaConvertOperation("mp4", "Comprimindo para 480p", 480, " (480p)"), "480p"),
+                    Group("quality", "Qualidade", "Preservar qualidade", "Icon.Quality", Resolutions(VideoProfile.Quality)),
+                    Group("efficiency", "Eficiência", "Máxima eficiência", "Icon.Efficiency", Resolutions(VideoProfile.Efficiency)),
                 }));
+            }
+        }
+
+        /// <summary>The third ring of "Comprimir": one profile at the source resolution or shrunk to a height (never upscaled).</summary>
+        private static IEnumerable<MenuNode> Resolutions(VideoProfile profile)
+        {
+            bool quality = profile == VideoProfile.Quality;
+            // Hub titles stay short (two lines in the hub); job titles can say more.
+            string name = quality ? "Qualidade" : "Eficiência";
+            string how = quality ? "com qualidade" : "ao máximo";
+            string tag = quality ? string.Empty : " leve";
+            yield return Action("original", "Original", name + " · resolução original", "Icon.Compress",
+                new MediaConvertOperation("mp4", $"Comprimindo {how}", 0, quality ? " (comprimido)" : " (leve)", profile), "Original");
+            foreach (int height in new[] { 1080, 720, 480 })
+            {
+                yield return Action("res-" + height, height + "p", $"{name} · {height}p", "Icon.Compress",
+                    new MediaConvertOperation("mp4", $"Comprimindo {how} em {height}p", height, $" ({height}p{tag})", profile), height + "p");
             }
         }
 

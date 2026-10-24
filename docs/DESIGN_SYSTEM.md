@@ -17,7 +17,7 @@ Sources: `src/Tamarillo/Theme/` — `Tokens.xaml` (merges the host tokens), `Ico
 | Group | Keys |
 |---|---|
 | Materials | `Tama.Ring` (95% Surface2-ish segment fill) · `Tama.Hub` · `Tama.Rim` · `Tama.Brand #E65A70` (brand only: catalog tile, never state) |
-| Radial geometry | `Radial.Hub 50` · `Radial.Inner 58` · `Radial.Outer 138` · `Radial.SubInner 146` · `Radial.SubOuter 198` · `Radial.Gap 4` · `Radial.Corner 9` · `Radial.SubItemAngle 30` (max; long lists tighten to fit 210°) · `Radial.Margin 28` · `Radial.IconSize 22` · `Radial.SubIconSize 18` |
+| Radial geometry | `Radial.Hub 50` · `Radial.Inner 58` · `Radial.Outer 138` · `Radial.SubInner 146` · `Radial.SubOuter 198` · `Radial.ThirdInner 206` · `Radial.ThirdOuter 256` · `Radial.Gap 4` · `Radial.Corner 9` · `Radial.SubItemAngle 30` / `Radial.ThirdItemAngle 24` (max; long lists tighten to fit 210°) · `Radial.Margin 28` · `Radial.IconSize 22` · `Radial.SubIconSize 18` |
 | Motion | `Motion.Wheel.In 260ms` (with `Ease.Pop`) · `Motion.Wheel.Stagger 16ms` · `Motion.Wheel.Out 140ms` (`Ease.In`) · `Motion.Highlight 160ms` · `Motion.SubRing.In 220ms` · `Motion.Overlay.In 320ms` · `Motion.Overlay.Out 180ms` · `Motion.Check 420ms` |
 | Easing | `Ease.Pop` (BackEase out, amplitude 0.32: one small overshoot) · `Ease.In` |
 | Overlay | `Overlay.Width 360` · `Overlay.Ring 36` · `Overlay.RingStroke 3` |
@@ -27,7 +27,7 @@ Sources: `src/Tamarillo/Theme/` — `Tokens.xaml` (merges the host tokens), `Ico
 
 | Component | Use |
 |---|---|
-| **Wheel** (`RadialWindow`) | Hub (thumbnail or kind icon + summary; while pointing, the full action sentence) · ring of ≤ 8 slots (icon + label, or a typographic badge for formats) · groups marked by a dot on the outer edge · sub-ring of ≤ 8 badges/icons |
+| **Wheel** (`RadialWindow`) | Hub (thumbnail or kind icon + summary; while pointing, the full action sentence) · ring of ≤ 8 slots (icon + label, or a typographic badge for formats) · groups marked by a dot on the outer edge · sub-ring of ≤ 8 badges/icons · a sub-ring item may itself be a group (dot on its outer edge): hovering it opens a third ring of ≤ 8 badges around it |
 | **Job card** (`JobCard`, `Tama.Card`) | Status disc (progress ring around the action icon → green ✓ / red alert, display only) · title (action → output name, opens it) · detail (current file "2 de 5" → output folder, reveals it) · corner × (cancels while running, closes when finished) · finished cards leave after `Overlay.AutoDismiss` (10 s), paused while hovered |
 | `Tama.RoundButton` | 36 px round button with animated hover/press tints |
 | `Tama.Link` | Text that acts (opacity dip on hover, no underline) |
